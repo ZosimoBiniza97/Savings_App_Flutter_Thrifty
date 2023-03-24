@@ -48,7 +48,32 @@ class _ViewAccountState extends State<ViewAccount> {
 
           return Stack(
             children: [
-              Container(
+
+          NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            if (scrollNotification is ScrollUpdateNotification) {
+              // Run your method here when the widget is being scrolled
+              setState(() {
+                _isPressed = true;
+                  topcontainerheight=50;
+                  _isColumnVisible = false;
+                  _isSecondColumnVisible = true;
+              });
+            }
+            if (scrollNotification is OverscrollNotification) {
+              if (scrollNotification.overscroll < 0) {
+                setState(() {
+                  _isPressed = false;
+                  topcontainerheight = 150;
+                  _isColumnVisible = true;
+                  _isSecondColumnVisible = false;
+                });
+              }
+            }
+            return false;
+
+          },
+             child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage("assets/images/background.png"),
@@ -98,7 +123,7 @@ class _ViewAccountState extends State<ViewAccount> {
                           child: Text('Current goal',style: TextStyle(fontSize: 15, color: Colors.white),),
                         ),),
 
-                                Padding(padding: EdgeInsets.only(top:3, right: 10),
+                                Padding(padding: EdgeInsets.only(top:3, right: 20),
                                   child: Container(
                                       child: ElevatedButton(
 
@@ -190,13 +215,8 @@ class _ViewAccountState extends State<ViewAccount> {
                         ),),
                       ),
 
-
                       ],
-
-
                     ),
-
-
 
                    ),
                        onTap:()
@@ -326,7 +346,7 @@ class _ViewAccountState extends State<ViewAccount> {
                            ),
                            ),
                          ),
-                         Padding(padding: EdgeInsets.only(left: screenWidth * 0.07,right: screenWidth * 0.07,top: 20),
+                         Padding(padding: EdgeInsets.only(left: screenWidth * 0.07,right: screenWidth * 0.07,top: 20, bottom: 15),
                            child: Container(
 
 
@@ -364,6 +384,9 @@ class _ViewAccountState extends State<ViewAccount> {
 
 
               ),
+          ),
+
+
               IconButton(
                 icon: Icon(Icons.menu),
                 onPressed: () {
