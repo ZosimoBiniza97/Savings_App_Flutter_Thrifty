@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/services.dart';
 import 'package:thrifty/account.dart';
 import 'login.dart'; // import the file containing the Login widget
 import 'package:local_auth/local_auth.dart';
-import 'package:thrifty/database.dart';
 
 
 LocalAuthentication auth = LocalAuthentication();
@@ -25,12 +23,14 @@ async {
   if (isAuthenticated) {
 
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
 
 
 
         return AlertDialog(
+
           title: Text('Authentication Successful'),
           content: Text('Authentication Successful'),
           actions: <Widget>[
@@ -46,6 +46,8 @@ async {
                // Do something when OK button is pressed
               },
             ),
+
+
           ],
         );
       },
