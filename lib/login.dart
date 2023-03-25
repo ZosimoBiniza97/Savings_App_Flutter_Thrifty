@@ -96,23 +96,21 @@ class Login extends StatelessWidget {
 
                         child: const Text('Login'),
                         onPressed: () async {
-                          Username = usernameController.text;
-                          Password = passwordController.text;
-                          isLoggedIn = await checkLogin(Username, Password);
-                          if (isLoggedIn)
-                            {
+                          // Username = usernameController.text;
+                          // Password = passwordController.text;
+                          // isLoggedIn = await checkLogin(Username, Password);
+                          // if (isLoggedIn)
+                          //   {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ViewAccount()),
                               );
-                            }
+                            // }
 
-                          else{
+                          // else{
+                          //
+                          // }
 
-                          }
-
-                          print(nameController.text);
-                          print(passwordController.text);
                         },
                         style: ButtonStyle(
 
