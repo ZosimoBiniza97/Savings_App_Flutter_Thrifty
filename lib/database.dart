@@ -1,3 +1,6 @@
+import 'package:moor_flutter/moor_flutter.dart';
+import 'package:thrifty/database.dart';
+
 part 'database.g.dart';
 
 class Users extends Table {
@@ -23,16 +26,3 @@ class AppDatabase extends _$AppDatabase {
 }
 
 // Add a sample user to the database
-Future<void> insertSampleUser() async {
-  final db = AppDatabase();
-
-  await db.into(db.users).insert(
-    UsersCompanion(
-      firstname: Value('John'),
-      lastname: Value('Doe'),
-      username: Value('johndoe'),
-      email: Value('johndoe@example.com'),
-      password: Value('password123'),
-    ),
-  );
-}

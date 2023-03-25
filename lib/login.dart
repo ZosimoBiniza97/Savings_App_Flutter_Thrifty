@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:moor_flutter/moor_flutter.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:thrifty/database.dart';
 import 'package:thrifty/main.dart';
 import 'account.dart';
 import 'package:moor_flutter/moor_flutter.dart';
-
+final db = AppDatabase();
 
 class Login extends StatelessWidget {
 
   TextEditingController nameController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  String Username='';
+  String Password='';
+  bool isLoggedIn = false;
 
 
-    @override
+  @override
     Widget build(BuildContext context) {
 
       auths(context);
@@ -58,7 +62,8 @@ class Login extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
                     child: TextField(
-                      controller: nameController,
+                      controller: usernameController,
+
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'User Name',
@@ -90,11 +95,22 @@ class Login extends StatelessWidget {
                       child: ElevatedButton(
 
                         child: const Text('Login'),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ViewAccount()),
-                          );
+                        onPressed: () async {
+                          Username = usernameController.text;
+                          Password = passwordController.text;
+                          isLoggedIn = await checkLogin(Username, Password);
+                          if (isLoggedIn)
+                            {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ViewAccount()),
+                              );
+                            }
+
+                          else{
+
+                          }
+
                           print(nameController.text);
                           print(passwordController.text);
                         },
@@ -213,3 +229,26 @@ class Login extends StatelessWidget {
     }
   }
 
+Future<bool> checkLogin(String username, String password) async {
+
+
+  // Use the select statement to retrieve the row from the users table with the matching username and password
+  final query = db.select(db.users)..where((u) => u.username.equals(username) & u.password.equals(password));
+  final result = await query.get();
+
+  // Return true if the result is not empty, indicating a matching user was found
+  return result.isNotEmpty;
+}
+
+Future<void> insertSampleUser() async {
+
+  await db.into(db.users).insert(
+    UsersCompanion(
+      firstname: Value('Zeus'),
+      lastname: Value('Biniza'),
+      username: Value('ZeusBnz'),
+      email: Value('johndoe@example.com'),
+      password: Value('password'),
+    ),
+  );
+}
