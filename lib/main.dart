@@ -4,7 +4,7 @@ import 'package:thrifty/account.dart';
 import 'login.dart'; // import the file containing the Login widget
 import 'package:local_auth/local_auth.dart';
 
-
+//Initialize authentication method
 LocalAuthentication auth = LocalAuthentication();
 
 
@@ -13,21 +13,18 @@ void main(){
   final insertsample = insertSampleUser();
   insertsample;
   runApp(MyApp());
-
-
 }
 
 Future<void> auths(BuildContext context)
 async {
+
+// method to detect if authentication is successful
   bool isAuthenticated = await authenticate();
   if (isAuthenticated) {
-
     showDialog(
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-
-
 
         return AlertDialog(
 
@@ -46,8 +43,6 @@ async {
                // Do something when OK button is pressed
               },
             ),
-
-
           ],
         );
       },
@@ -57,14 +52,13 @@ async {
   }
 
   else {
-
-
-
+// Do something when authentication fails
+  // UPDATE SOON
   }
 
 }
 
-
+// Fingerprint authentication method
 Future authenticate() async {
   final bool isBiometricsAvailable = await auth.isDeviceSupported();
   if (!isBiometricsAvailable) return false;
@@ -76,11 +70,13 @@ Future authenticate() async {
         stickyAuth: true,
       ),
     );
-  } on PlatformException {
+  }
+  on PlatformException {
     return;
   }
 }
 
+// Call main Login body
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

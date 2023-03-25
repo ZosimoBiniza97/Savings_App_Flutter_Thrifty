@@ -8,8 +8,7 @@ final db = AppDatabase();
 
 class Login extends StatelessWidget {
 
-  TextEditingController nameController = TextEditingController();
-
+// Initializing login data types: Username and Password (textfields) for local database query
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   String Username='';
@@ -20,7 +19,10 @@ class Login extends StatelessWidget {
   @override
     Widget build(BuildContext context) {
 
+    // Calling auths method to see if authentication is successful
       auths(context);
+
+      // This snippet hides the status bar of the android OS e.g., battery status, notification bar, etc
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
         SystemUiOverlay.bottom
       ]);
@@ -28,18 +30,25 @@ class Login extends StatelessWidget {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Login',
+
         home: Scaffold(
           resizeToAvoidBottomInset: false,
+
           body: Container(
+
+            // Adding the background for the login page
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage("assets/images/background.png"),
                   fit: BoxFit.cover,
                 ),
               ),
-              child: ListView(
 
+              // This listview includes the banner image, Sign In text, the text fields, and the buttons
+              child: ListView(
                 children: <Widget>[
+
+                  // Banner image
                   Container(
                     child: Image.asset(
                       'assets/images/login.png',
@@ -48,6 +57,7 @@ class Login extends StatelessWidget {
 
                   ),
 
+                  // Sign in text
                   Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
@@ -56,9 +66,10 @@ class Login extends StatelessWidget {
                         style: TextStyle(fontSize: 30,
                           fontWeight: FontWeight.bold
                         ),
-                      )),
+                      )
+                  ),
 
-
+                  // Username text field
                   Container(
                     padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
                     child: TextField(
@@ -69,11 +80,12 @@ class Login extends StatelessWidget {
                         labelText: 'User Name',
                         labelStyle: TextStyle(
                           fontSize:20
-
                         ),
                       ),
                     ),
                   ),
+
+                  // Password text field
                   Container(
                     padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
                     child: TextField(
@@ -84,11 +96,12 @@ class Login extends StatelessWidget {
                         labelText: 'Password',
                         labelStyle: TextStyle(
                             fontSize:20
-
                         ),
                       ),
                     ),
                   ),
+
+                  // Login button
                   Container(
                       height: 50,
                       padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
@@ -110,10 +123,10 @@ class Login extends StatelessWidget {
                           // else{
                           //
                           // }
-
                         },
-                        style: ButtonStyle(
 
+                        // Design of the login button
+                        style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.resolveWith<
                                 Color>(
                                   (Set<MaterialState> states) {
@@ -132,10 +145,13 @@ class Login extends StatelessWidget {
                                     return Colors.black; //<-- SEE HERE
                                   }
                                   return null; // Defer to the widget's default.
-                                })),
-
+                                }
+                                )
+                        ),
                       )
                   ),
+
+                  // Text button for forgot password
                   TextButton(
                     onPressed: () {
                       //forgot password screen
@@ -143,6 +159,7 @@ class Login extends StatelessWidget {
                     child: const Text('Forgot Password',),
                   ),
 
+                  // This row is entirely for the line separator under Forgot Password
                   Row(
                     children: [
                       Expanded(
@@ -164,17 +181,18 @@ class Login extends StatelessWidget {
                     ],
                     mainAxisAlignment: MainAxisAlignment.center,
                   ),
+
+                 // Does not have an account text item
                  Padding(padding: EdgeInsets.all(16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const <Widget>[
-                      Text('Does not have account?'),
+                      Text('Does not have an account?'),
 
                     ],
                   ),),
 
-
-
+                  // This row includes the Sign Up button
                   Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -182,8 +200,8 @@ class Login extends StatelessWidget {
                         ElevatedButton(
                             child: const Text('Sign up'),
                             onPressed: () {
-                              print(nameController.text);
-                              print(passwordController.text);
+                              // Do something when Sign Up is pressed
+                              // To be updated
                             },
 
                             style: ButtonStyle(
@@ -207,9 +225,7 @@ class Login extends StatelessWidget {
                                       }
                                       return null; // Defer to the widget's default.
                                     })
-
                             )
-
                         )
                       ],
                     ),
@@ -218,17 +234,14 @@ class Login extends StatelessWidget {
 
                 ],
               )
-
           ),
-
-
         ),
       );
     }
   }
 
+  // This is a database method. This method will check if the Username and Password submitted by the user exists in the database
 Future<bool> checkLogin(String username, String password) async {
-
 
   // Use the select statement to retrieve the row from the users table with the matching username and password
   final query = db.select(db.users)..where((u) => u.username.equals(username) & u.password.equals(password));
@@ -238,8 +251,8 @@ Future<bool> checkLogin(String username, String password) async {
   return result.isNotEmpty;
 }
 
+// This is a test method that inserts a sample user data to the user table in the schema
 Future<void> insertSampleUser() async {
-
   await db.into(db.users).insert(
     UsersCompanion(
       firstname: Value('Zeus'),
