@@ -60,7 +60,7 @@ class _ViewAccountState extends State<ViewAccount> {
                   _isSecondColumnVisible = true;
               });
             }
-            if (scrollNotification is OverscrollNotification) {
+            else if (scrollNotification is OverscrollNotification) {
               if (scrollNotification.overscroll < 0) {
                 setState(() {
                   _isPressed = false;
@@ -221,7 +221,6 @@ class _ViewAccountState extends State<ViewAccount> {
                    ),
                        onTap:()
                        {
-
                            setState(() {
                              _isPressed = !_isPressed;
 
@@ -234,11 +233,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                _isColumnVisible = true;
                                _isSecondColumnVisible = false;
                              }
-
                            });
-
-
-
                        }
 
 
