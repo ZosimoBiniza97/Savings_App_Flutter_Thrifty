@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:thrifty/account.dart';
 import 'login.dart'; // import the file containing the Login widget
 import 'package:local_auth/local_auth.dart';
+import 'package:thrifty/database.dart';
 
 
 LocalAuthentication auth = LocalAuthentication();
@@ -11,7 +12,8 @@ LocalAuthentication auth = LocalAuthentication();
 
 
 void main(){
-
+  final insertsample = insertSampleUser();
+  insertsample;
   runApp(MyApp());
 
 
