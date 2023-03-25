@@ -9,6 +9,12 @@ class Users extends Table {
   TextColumn get username => text()();
   TextColumn get email => text()();
   TextColumn get password => text()();
+
+  @override
+  List<String> get customConstraints => [
+    'UNIQUE (username, email)'
+  ];
+
 }
 
 @UseMoor(tables: [Users])

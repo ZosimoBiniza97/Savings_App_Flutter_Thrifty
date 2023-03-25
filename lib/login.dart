@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:thrifty/database.dart';
 import 'package:thrifty/main.dart';
 import 'account.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 final db = AppDatabase();
 
@@ -28,10 +29,12 @@ class Login extends StatelessWidget {
       ]);
 
       return MaterialApp(
+
         debugShowCheckedModeBanner: false,
         title: 'Login',
 
         home: Scaffold(
+
           resizeToAvoidBottomInset: false,
 
           body: Container(
@@ -109,20 +112,71 @@ class Login extends StatelessWidget {
 
                         child: const Text('Login'),
                         onPressed: () async {
-                          // Username = usernameController.text;
-                          // Password = passwordController.text;
-                          // isLoggedIn = await checkLogin(Username, Password);
-                          // if (isLoggedIn)
-                          //   {
+                          Username = usernameController.text;
+                          Password = passwordController.text;
+                          isLoggedIn = await checkLogin(Username, Password);
+                          if (isLoggedIn)
+                            {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ViewAccount()),
                               );
-                            // }
+                            }
 
-                          // else{
-                          //
-                          // }
+                          else if(Username.isEmpty||Password.isEmpty){
+                            showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (BuildContext context) {
+
+                                return AlertDialog(
+
+                                  title: Text('Invalid Login'),
+                                  content: Text('Please enter Username and Password'),
+                                  actions: <Widget>[
+
+                                    TextButton(
+                                      child: Text('OK'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        // Do something when OK button is pressed
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+
+                          else if (!isLoggedIn)
+                          {
+                            showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (BuildContext context) {
+
+                                return AlertDialog(
+
+                                  title: Text('Invalid Login'),
+                                  content: Text('The Username or Password is incorrect. Please try again. '),
+                                  actions: <Widget>[
+
+                                    TextButton(
+                                      child: Text('OK'),
+                                      onPressed: () {
+                                        usernameController.clear();
+                                        passwordController.clear();
+                                        Navigator.pop(context);
+                                        // Do something when OK button is pressed
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+
+
                         },
 
                         // Design of the login button
@@ -253,13 +307,23 @@ Future<bool> checkLogin(String username, String password) async {
 
 // This is a test method that inserts a sample user data to the user table in the schema
 Future<void> insertSampleUser() async {
-  await db.into(db.users).insert(
-    UsersCompanion(
-      firstname: Value('Zeus'),
-      lastname: Value('Biniza'),
-      username: Value('ZeusBnz'),
-      email: Value('johndoe@example.com'),
-      password: Value('password'),
-    ),
-  );
+  try {
+    await db.into(db.users).insert(
+      UsersCompanion(
+        firstname: Value('Zeus'),
+        lastname: Value('Biniza'),
+        username: Value('admin'),
+        email: Value('johndoe@example.com'),
+        password: Value('admin'),
+      ),
+    );
+  }
+  on DatabaseException catch (e) {
+    if (e.toString().contains('UNIQUE')) {
+      // handle the unique constraint violation error here
+      print('already exists');
+    } else {
+      rethrow;
+    }
+  }
 }
