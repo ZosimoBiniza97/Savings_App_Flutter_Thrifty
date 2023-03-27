@@ -421,7 +421,7 @@ class _ViewAccountState extends State<ViewAccount> {
 
       // This is the navigation drawer. To be updated. No function yet
       drawer: Drawer(
-        width: screenWidth/2,
+        width: screenWidth/1.6,
 
         child: Container (
           color: Color.fromRGBO(104, 157, 180, 1.0),
