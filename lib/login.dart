@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:thrifty/database.dart';
+import 'package:thrifty/signup.dart';
 import 'package:thrifty/main.dart';
 import 'account.dart';
 import 'package:sqflite/sqflite.dart';
@@ -241,7 +242,7 @@ class Login extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const <Widget>[
-                      Text('Does not have an account?'),
+                      Text('Do not have an account?'),
 
                     ],
                   ),),
@@ -254,6 +255,11 @@ class Login extends StatelessWidget {
                         ElevatedButton(
                             child: const Text('Sign up'),
                             onPressed: () {
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => SignUpPage()),
+                              );
                               // Do something when Sign Up is pressed
                               // To be updated
                             },
