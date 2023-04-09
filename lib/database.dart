@@ -1,7 +1,8 @@
 import 'package:moor_flutter/moor_flutter.dart';
-import 'package:thrifty/database.dart';
-
+import 'package:thrifty/signup.dart';
 part 'database.g.dart';
+
+final db = AppDatabase();
 
 class Users extends Table {
   TextColumn get firstname => text()();
@@ -14,10 +15,17 @@ class Users extends Table {
   List<String> get customConstraints => [
     'UNIQUE (username, email)'
   ];
+}
+
+class Expenses extends Table {
+  TextColumn get username => text()();
+  TextColumn get category => text()();
+  RealColumn get amount => real()();
+  TextColumn get note => text()();
 
 }
 
-@UseMoor(tables: [Users])
+@UseMoor(tables: [Users, Expenses])
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(
@@ -29,6 +37,11 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
-}
 
-// Add a sample user to the database
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+  );
+}

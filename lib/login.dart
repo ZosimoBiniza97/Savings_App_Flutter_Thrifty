@@ -6,7 +6,7 @@ import 'package:thrifty/main.dart';
 import 'account.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:moor_flutter/moor_flutter.dart';
-final db = AppDatabase();
+
 
 class Login extends StatelessWidget {
 
@@ -20,6 +20,8 @@ class Login extends StatelessWidget {
 
   @override
     Widget build(BuildContext context) {
+    insertSampleUser();
+    // insertSampleExpenses();
 
     // Calling auths method to see if authentication is successful
       auths(context);
@@ -118,6 +120,7 @@ class Login extends StatelessWidget {
                           isLoggedIn = await checkLogin(Username, Password);
                           if (isLoggedIn)
                             {
+                              userName_session = Username;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ViewAccount()),
@@ -306,7 +309,6 @@ Future<bool> checkLogin(String username, String password) async {
   // Use the select statement to retrieve the row from the users table with the matching username and password
   final query = db.select(db.users)..where((u) => u.username.equals(username) & u.password.equals(password));
   final result = await query.get();
-
   // Return true if the result is not empty, indicating a matching user was found
   return result.isNotEmpty;
 }
@@ -326,6 +328,55 @@ Future<void> insertSampleUser() async {
   }
   on DatabaseException catch (e) {
     if (e.toString().contains('UNIQUE')) {
+      // handle the unique constraint violation error here
+      print('already exists');
+    } else {
+      rethrow;
+    }
+  }
+}
+
+Future<void> insertSampleExpenses() async {
+  try {
+    await db.batch((batch) {
+      batch.insertAll(
+        db.expenses,
+        [
+          ExpensesCompanion(
+            username: Value('admin'),
+            category: Value('Transportation'),
+            amount: Value(50000),
+            note: Value('Gas Money'),
+          ),
+          ExpensesCompanion(
+            username: Value('admin'),
+            category: Value('Food'),
+            amount: Value(25000),
+            note: Value('Dinner with friends'),
+          ),
+          ExpensesCompanion(
+            username: Value('admin'),
+            category: Value('Entertainment'),
+            amount: Value(15000),
+            note: Value('Movie tickets'),
+          ),
+          ExpensesCompanion(
+            username: Value('admin'),
+            category: Value('Utilities'),
+            amount: Value(15000),
+            note: Value('Meralco'),
+          ),
+          ExpensesCompanion(
+            username: Value('admin'),
+            category: Value('Others'),
+            amount: Value(15000),
+            note: Value('Tuition'),
+          ),
+        ],
+      );
+    });
+  } on MoorWrappedException catch (e) {
+    if (e.cause.toString().contains('UNIQUE')) {
       // handle the unique constraint violation error here
       print('already exists');
     } else {

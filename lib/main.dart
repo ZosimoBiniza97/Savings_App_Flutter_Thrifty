@@ -10,8 +10,6 @@ LocalAuthentication auth = LocalAuthentication();
 
 
 void main(){
-  final insertsample = insertSampleUser();
-  insertsample;
   runApp(MyApp());
 }
 
