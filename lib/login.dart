@@ -336,51 +336,51 @@ Future<void> insertSampleUser() async {
   }
 }
 
-Future<void> insertSampleExpenses() async {
-  try {
-    await db.batch((batch) {
-      batch.insertAll(
-        db.expenses,
-        [
-          ExpensesCompanion(
-            username: Value('admin'),
-            category: Value('Transportation'),
-            amount: Value(50000),
-            note: Value('Gas Money'),
-          ),
-          ExpensesCompanion(
-            username: Value('admin'),
-            category: Value('Food'),
-            amount: Value(25000),
-            note: Value('Dinner with friends'),
-          ),
-          ExpensesCompanion(
-            username: Value('admin'),
-            category: Value('Entertainment'),
-            amount: Value(15000),
-            note: Value('Movie tickets'),
-          ),
-          ExpensesCompanion(
-            username: Value('admin'),
-            category: Value('Utilities'),
-            amount: Value(15000),
-            note: Value('Meralco'),
-          ),
-          ExpensesCompanion(
-            username: Value('admin'),
-            category: Value('Others'),
-            amount: Value(15000),
-            note: Value('Tuition'),
-          ),
-        ],
-      );
-    });
-  } on MoorWrappedException catch (e) {
-    if (e.cause.toString().contains('UNIQUE')) {
-      // handle the unique constraint violation error here
-      print('already exists');
-    } else {
-      rethrow;
-    }
-  }
-}
+// Future<void> insertSampleExpenses() async {
+//   try {
+//     await db.batch((batch) {
+//       batch.insertAll(
+//         db.expenses,
+//         [
+//           ExpensesCompanion(
+//             username: Value('admin'),
+//             category: Value('Transportation'),
+//             amount: Value(50000),
+//             note: Value('Gas Money'),
+//           ),
+//           ExpensesCompanion(
+//             username: Value('admin'),
+//             category: Value('Food'),
+//             amount: Value(25000),
+//             note: Value('Dinner with friends'),
+//           ),
+//           ExpensesCompanion(
+//             username: Value('admin'),
+//             category: Value('Entertainment'),
+//             amount: Value(15000),
+//             note: Value('Movie tickets'),
+//           ),
+//           ExpensesCompanion(
+//             username: Value('admin'),
+//             category: Value('Utilities'),
+//             amount: Value(15000),
+//             note: Value('Meralco'),
+//           ),
+//           ExpensesCompanion(
+//             username: Value('admin'),
+//             category: Value('Others'),
+//             amount: Value(15000),
+//             note: Value('Tuition'),
+//           ),
+//         ],
+//       );
+//     });
+//   } on MoorWrappedException catch (e) {
+//     if (e.cause.toString().contains('UNIQUE')) {
+//       // handle the unique constraint violation error here
+//       print('already exists');
+//     } else {
+//       rethrow;
+//     }
+//   }
+// }

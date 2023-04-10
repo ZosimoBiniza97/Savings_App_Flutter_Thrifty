@@ -22,8 +22,10 @@ class ViewAccount extends StatefulWidget {
 
 class _ViewAccountState extends State<ViewAccount> {
   bool _isLoading = true;
-
-
+  final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
+  String? _selectedCategory;
+  double? _amount;
+  String? _note;
   // These strings are for getting the value of the section of doughnut graph the user tapped.
   // This value is for the money.
   String tappedValue = '';
@@ -334,7 +336,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                     left: screenWidth * 0.07,
                                     right: screenWidth * 0.07,
                                     top: 20),
-                                  child: Container(height: 400,
+                                  child: Container(
 
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(25),
@@ -352,8 +354,17 @@ class _ViewAccountState extends State<ViewAccount> {
                                     ),
 
 
+                                    child: Column(
+
+                                      children: [
                                     // This snippet displays the chart
-                                    child: SfCircularChart(
+                                        Container( height: 400,
+
+                                        child: _chartData.isEmpty
+                                        ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
+
+                                        : SfCircularChart(
+                                          centerY: '100',
 
                                       annotations: [
                                         CircularChartAnnotation(
@@ -380,8 +391,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                               fontWeight: FontWeight.bold)),
 
                                       legend: Legend(isVisible: true,
-                                          overflowMode: LegendItemOverflowMode
-                                              .wrap,
+                                          overflowMode: LegendItemOverflowMode.wrap,
                                           position: LegendPosition.bottom),
 
                                       tooltipBehavior: _tooltipBehavior,
@@ -434,7 +444,35 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                         ),
                                       ],
+
+
                                     ),
+                                        ),
+                                        Padding(padding: EdgeInsets.only(bottom: 20),
+
+                                       child: ElevatedButton(
+                                          onPressed: () {
+                                            // add your function here
+                                            showAddExpenseDialog();
+                                            // Top be updated once database is complete
+                                          },
+                                          child: Text(
+                                              'Add Expense'),
+                                          style: ElevatedButton
+                                              .styleFrom(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius
+                                                    .circular(
+                                                    20), // set the radius value you want
+                                              ),
+                                              padding: EdgeInsets
+                                                  .symmetric(
+                                                horizontal: 30,
+                                                vertical: 10,)
+                                          ),
+                                        )
+                                        )
+                           ] ),
                                   ),
                                 ),
 
@@ -505,8 +543,6 @@ class _ViewAccountState extends State<ViewAccount> {
                           )
                         ]
                     ),
-
-
                   ),
                 ),
               ),
@@ -658,11 +694,17 @@ class _ViewAccountState extends State<ViewAccount> {
   List<FinancialData> getChartData() {
 
     final List<FinancialData> chartData = [
-      FinancialData('Food', foodExpenseTotal),
-      FinancialData('Transportation', transportationExpenseTotal),
-      FinancialData('Utilities', utilitiesExpenseTotal),
-      FinancialData('Entertainment', entertainmentExpenseTotal),
-      FinancialData('Others', othersExpenseTotal),
+
+      if (foodExpenseTotal>0)
+        FinancialData('Food', foodExpenseTotal),
+      if (transportationExpenseTotal>0)
+        FinancialData('Transportation', transportationExpenseTotal),
+      if (utilitiesExpenseTotal>0)
+        FinancialData('Utilities', utilitiesExpenseTotal),
+      if (entertainmentExpenseTotal>0)
+        FinancialData('Entertainment', entertainmentExpenseTotal),
+      if (othersExpenseTotal>0)
+        FinancialData('Others', othersExpenseTotal),
     ];
     return chartData;
   }
@@ -677,7 +719,7 @@ class _ViewAccountState extends State<ViewAccount> {
     foodExpenseTotal=totalAmount;
   }
 
-getTotalTransportationExpenses() async {
+  getTotalTransportationExpenses() async {
     final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Transportation'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
@@ -687,7 +729,7 @@ getTotalTransportationExpenses() async {
     transportationExpenseTotal=totalAmount;
   }
 
-getTotalUtilitiesExpenses() async {
+  getTotalUtilitiesExpenses() async {
     final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Utilities'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
@@ -697,7 +739,7 @@ getTotalUtilitiesExpenses() async {
     utilitiesExpenseTotal=totalAmount;
   }
 
-getTotalEntertainmentExpenses() async {
+  getTotalEntertainmentExpenses() async {
     final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Entertainment'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
@@ -735,6 +777,123 @@ getTotalEntertainmentExpenses() async {
       _isLoading = false;
     });
   }
+
+  Future showAddExpenseDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Form(
+              key: _keyDialogForm,
+              child: Column(
+                children: <Widget>[
+
+
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(labelText: 'Category'),
+                    value: _selectedCategory,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a category';
+                      }
+                      return null;
+                    },
+                    items: <String>['Food', 'Transportation', 'Utilities', 'Entertainment', 'Others']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Amount'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                    _amount = double.parse(value!);
+                    },
+                  ),
+
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Note'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your note';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _note = value;
+                    },
+                  ),
+
+                ],
+              ),
+            ),
+
+
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm.currentState!.validate()) {
+                    _keyDialogForm.currentState?.save();
+                    insertExpense();
+                    _loadData();
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Save'),
+
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+
+
+  Future<void> insertExpense() async {
+    try {
+      await db.batch((batch) {
+        batch.insertAll(
+          db.expenses,
+          [
+            ExpensesCompanion(
+              username: Value(userName_session),
+              category: Value(_selectedCategory!),
+              amount: Value(_amount!),
+              note: Value(_note!),
+            ),
+          ],
+        );
+      });
+    } on MoorWrappedException catch (e) {
+      if (e.cause.toString().contains('UNIQUE')) {
+        // handle the unique constraint violation error here
+        print('already exists');
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+
 
 }
 class FinancialData{
