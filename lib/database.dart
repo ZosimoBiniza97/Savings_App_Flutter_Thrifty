@@ -5,6 +5,7 @@ part 'database.g.dart';
 final db = AppDatabase();
 
 class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
   TextColumn get firstname => text()();
   TextColumn get lastname => text()();
   TextColumn get username => text()();
@@ -18,7 +19,7 @@ class Users extends Table {
 }
 
 class Expenses extends Table {
-  TextColumn get username => text()();
+  IntColumn get userid => integer()();
   TextColumn get category => text()();
   RealColumn get amount => real()();
   TextColumn get note => text()();

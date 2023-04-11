@@ -16,6 +16,7 @@ class Login extends StatelessWidget {
   String Username='';
   String Password='';
   bool isLoggedIn = false;
+  int? id_session_login;
 
 
   @override
@@ -117,10 +118,10 @@ class Login extends StatelessWidget {
                         onPressed: () async {
                           Username = usernameController.text;
                           Password = passwordController.text;
-                          isLoggedIn = await checkLogin(Username, Password);
-                          if (isLoggedIn)
+                          id_session_login= await checkLogin(Username, Password);
+                          if (id_session_login != null)
                             {
-                              userName_session = Username;
+                              id_session = id_session_login;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ViewAccount()),
@@ -304,13 +305,14 @@ class Login extends StatelessWidget {
   }
 
   // This is a database method. This method will check if the Username and Password submitted by the user exists in the database
-Future<bool> checkLogin(String username, String password) async {
+Future<int?> checkLogin(String username, String password) async {
 
   // Use the select statement to retrieve the row from the users table with the matching username and password
   final query = db.select(db.users)..where((u) => u.username.equals(username) & u.password.equals(password));
   final result = await query.get();
+
   // Return true if the result is not empty, indicating a matching user was found
-  return result.isNotEmpty;
+  return result.isNotEmpty ? result.first.id: null;
 }
 
 // This is a test method that inserts a sample user data to the user table in the schema

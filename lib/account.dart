@@ -8,7 +8,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/database.dart';
 import 'package:thrifty/login.dart';
 
-String userName_session = '';
+int? id_session;
 int foodExpenseTotal=0;
 int transportationExpenseTotal=0;
 int utilitiesExpenseTotal=0;
@@ -710,7 +710,7 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
   getTotalFoodExpenses() async {
-    final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Food'));
+    final query = db.select(db.expenses)..where((t) => t.userid.equals(id_session) & t.category.equals('Food'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
 
@@ -720,7 +720,7 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
   getTotalTransportationExpenses() async {
-    final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Transportation'));
+    final query = db.select(db.expenses)..where((t) => t.userid.equals(id_session) & t.category.equals('Transportation'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
 
@@ -730,7 +730,7 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
   getTotalUtilitiesExpenses() async {
-    final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Utilities'));
+    final query = db.select(db.expenses)..where((t) => t.userid.equals(id_session) & t.category.equals('Utilities'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
 
@@ -740,7 +740,7 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
   getTotalEntertainmentExpenses() async {
-    final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Entertainment'));
+    final query = db.select(db.expenses)..where((t) => t.userid.equals(id_session) & t.category.equals('Entertainment'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
 
@@ -749,7 +749,7 @@ class _ViewAccountState extends State<ViewAccount> {
     entertainmentExpenseTotal=totalAmount;
   }
   getTotalOthersExpenses() async {
-    final query = db.select(db.expenses)..where((t) => t.username.equals(userName_session) & t.category.equals('Others'));
+    final query = db.select(db.expenses)..where((t) => t.userid.equals(id_session) & t.category.equals('Others'));
     final results = await query.get();
     final amounts = results.map((expense) => expense.amount).toList();
 
@@ -875,7 +875,7 @@ class _ViewAccountState extends State<ViewAccount> {
           db.expenses,
           [
             ExpensesCompanion(
-              username: Value(userName_session),
+              userid: Value(id_session!),
               category: Value(_selectedCategory!),
               amount: Value(_amount!),
               note: Value(_note!),
