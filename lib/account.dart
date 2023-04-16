@@ -7,6 +7,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/database.dart';
 import 'package:thrifty/login.dart';
+import 'package:intl/intl.dart';
 
 int? id_session;
 int foodExpenseTotal=0;
@@ -15,7 +16,10 @@ int utilitiesExpenseTotal=0;
 int entertainmentExpenseTotal=0;
 int othersExpenseTotal=0;
 
+
 class ViewAccount extends StatefulWidget {
+  get expenses => null;
+
   @override
   _ViewAccountState createState() => _ViewAccountState();
 }
@@ -23,9 +27,15 @@ class ViewAccount extends StatefulWidget {
 class _ViewAccountState extends State<ViewAccount> {
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
+  TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
   String? _selectedCategory;
   double? _amount;
   String? _note;
+  DateTime? _date;
+  DateTime? _Tempdate;
+  DateTime pickedDate = DateTime.now();
+  String formattedDate='';
+  List<Map<String, dynamic>> recent_expenses = [];
   // These strings are for getting the value of the section of doughnut graph the user tapped.
   // This value is for the money.
   String tappedValue = '';
@@ -61,6 +71,8 @@ class _ViewAccountState extends State<ViewAccount> {
 
   // If top container is is minimized, it will display only the current goal text
   bool _isSecondColumnVisible = false;
+
+
 
 
   @override
@@ -403,6 +415,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                               _) => data.expense,
                                           yValueMapper: (FinancialData data,
                                               _) => data.amount,
+                                          pointColorMapper: (FinancialData data, _) => data.color,
                                           dataLabelSettings: DataLabelSettings(
                                             isVisible: true,),
                                           enableTooltip: true,
@@ -498,9 +511,59 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                     ),
                                     child: Padding(padding: EdgeInsets.all(15),
-                                      child: Text(
-                                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                                          style: TextStyle(fontSize: 20,)),
+                                      child: Column(
+                                        children: [
+
+                                          Text('Recent Expenses', style: TextStyle(fontSize: 20, color: Colors.deepOrangeAccent, fontWeight: FontWeight.bold),),
+
+                                          recent_expenses.isEmpty
+                                           ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
+                                          : DataTable(
+                                        showCheckboxColumn: false,
+                                        horizontalMargin: 10,
+                                        columnSpacing: 30,
+                                        columns: const [
+                                          DataColumn(label: Text('Category')),
+                                          DataColumn(label: Text('Amount')),
+                                          // DataColumn(label: Text('Note')),
+                                          DataColumn(label: Text('Date')),
+                                        ],
+                                        rows: recent_expenses
+                                            .map((expense) => DataRow(cells: [
+                                          DataCell(Text(expense['category'],style: TextStyle(color: getCategoryColor(expense['category'])),)),
+                                          DataCell(Text('\₱'+expense['amount'].toString())),
+                                          // DataCell(Text(expense['note'])),
+                                          DataCell(Text(expense['date'].toString())),
+                                        ],
+                                          onSelectChanged: (value) {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                title: Text(expense['category'],
+                                                style: TextStyle(color: getCategoryColor(expense['category'])),),
+                                                content: Text('Amount: \₱${expense['amount']} \nDate: ${expense['date']}\nNote: ${expense['note']}'),
+
+                                                  actions: [
+
+                                                  TextButton(
+                                                onPressed: () => Navigator.pop(context),
+                                                  child: Text('Close'),
+                                        ),
+                                        ],
+                                        ),
+                                        );
+                                        },
+
+                                        )
+                                        )
+
+
+                                            .toList(),
+
+                                          )]),
+
+
+
                                     ),
                                   ),
                                 ),
@@ -689,22 +752,28 @@ class _ViewAccountState extends State<ViewAccount> {
     );
   }
 }
-
+  List<Color> categoryColors = [
+    Colors.lightBlueAccent, // Food
+    Colors.blue, // Transportation
+    Colors.orangeAccent, // Utilities
+    Colors.grey, // Others
+    Colors.deepOrange, // Entertainment
+  ];
 // This inserts the chart data to be displayed on the container
   List<FinancialData> getChartData() {
 
     final List<FinancialData> chartData = [
 
       if (foodExpenseTotal>0)
-        FinancialData('Food', foodExpenseTotal),
+        FinancialData('Food', foodExpenseTotal,categoryColors[0]),
       if (transportationExpenseTotal>0)
-        FinancialData('Transportation', transportationExpenseTotal),
+        FinancialData('Transportation', transportationExpenseTotal, categoryColors[1]),
       if (utilitiesExpenseTotal>0)
-        FinancialData('Utilities', utilitiesExpenseTotal),
+        FinancialData('Utilities', utilitiesExpenseTotal, categoryColors[2]),
       if (entertainmentExpenseTotal>0)
-        FinancialData('Entertainment', entertainmentExpenseTotal),
+        FinancialData('Entertainment', entertainmentExpenseTotal, categoryColors[4]),
       if (othersExpenseTotal>0)
-        FinancialData('Others', othersExpenseTotal),
+        FinancialData('Others', othersExpenseTotal, categoryColors[3]),
     ];
     return chartData;
   }
@@ -757,6 +826,42 @@ class _ViewAccountState extends State<ViewAccount> {
 
     othersExpenseTotal=totalAmount;
   }
+  getRecentExpenses() async {
+    recent_expenses.clear();
+    final query = db.select(db.expenses)
+      ..where((expense) => expense.userid.equals(id_session))
+      ..orderBy([(expense) => OrderingTerm(expression: expense.date, mode: OrderingMode.desc)])
+      ..limit(10);
+    final result = await query.get();
+
+    print("Result: $result");
+    for (var row in result) {
+      final formatDate = DateFormat('yyyy-MM-dd').format(row.date!);
+      Map<String, dynamic> item = {
+        'category': row.category,
+        'amount': row.amount,
+        'note': row.note,
+        'date': formatDate,
+      };
+      recent_expenses.add(item);
+    }
+
+  }
+  Color getCategoryColor(String category) {
+    switch (category) {
+      case 'Food':
+        return Colors.lightBlueAccent;
+      case 'Transportation':
+        return Colors.blue;
+      case 'Utilities':
+        return Colors.orangeAccent;
+      case 'Entertainment':
+        return Colors.deepOrange;
+      default:
+        return Colors.grey;
+
+    }
+  }
 
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
@@ -765,6 +870,7 @@ class _ViewAccountState extends State<ViewAccount> {
     getTotalOthersExpenses();
     getTotalUtilitiesExpenses();
     getTotalTransportationExpenses();
+    getRecentExpenses();
 
     // Delay for 1 second to simulate database loading
     await Future.delayed(Duration(seconds: 1));
@@ -788,7 +894,43 @@ class _ViewAccountState extends State<ViewAccount> {
               child: Column(
                 children: <Widget>[
 
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Date'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter date';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      if (_Tempdate==null) {
+                        _date = DateTime.now();
+                      }
+                      else
+                        {_date = _Tempdate;}
+                      print(_date);
+                    },
 
+                    controller: dateInputController,
+                    readOnly: true,
+                    onTap: () async {
+                      pickedDate = (await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now()))!;
+
+                        print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
+                        formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                        print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                        dateInputController.text = formattedDate;
+                        _Tempdate=pickedDate;
+                        print(_Tempdate);
+
+                    },
+
+
+                  ),
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(labelText: 'Category'),
                     value: _selectedCategory,
@@ -851,6 +993,9 @@ class _ViewAccountState extends State<ViewAccount> {
                     _keyDialogForm.currentState?.save();
                     insertExpense();
                     _loadData();
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
                     Navigator.pop(context);
                   }
                 },
@@ -859,6 +1004,9 @@ class _ViewAccountState extends State<ViewAccount> {
               ),
               ElevatedButton(
                   onPressed: () {
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
                     Navigator.pop(context);
                   },
                   child: Text('Cancel')),
@@ -879,6 +1027,7 @@ class _ViewAccountState extends State<ViewAccount> {
               category: Value(_selectedCategory!),
               amount: Value(_amount!),
               note: Value(_note!),
+              date: Value(_date),
             ),
           ],
         );
@@ -897,9 +1046,10 @@ class _ViewAccountState extends State<ViewAccount> {
 
 }
 class FinancialData{
-  FinancialData(this.expense, this.amount);
+  FinancialData(this.expense, this.amount, this.color);
   final String expense;
   final int amount;
+  final Color color;
 
 }
 

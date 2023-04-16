@@ -23,7 +23,7 @@ class Expenses extends Table {
   TextColumn get category => text()();
   RealColumn get amount => real()();
   TextColumn get note => text()();
-
+  DateTimeColumn get date => dateTime().nullable()();
 }
 
 @UseMoor(tables: [Users, Expenses])
