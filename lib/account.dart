@@ -109,6 +109,7 @@ class _ViewAccountState extends State<ViewAccount> {
     ]);
 
     return Scaffold(
+      drawer: MyDrawer(),
       body: Builder(
         builder: (BuildContext context) {
           return Stack(
@@ -623,132 +624,6 @@ class _ViewAccountState extends State<ViewAccount> {
         },
       ),
 
-
-      // This is the navigation drawer. To be updated. No function yet
-      drawer: Drawer(
-        width: screenWidth / 1.6,
-
-        child: Container(
-          color: Color.fromRGBO(104, 157, 180, 1.0),
-
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-
-
-              UserAccountsDrawerHeader(accountName: Text('John Smith'),
-                accountEmail: Text('johnsmith@email.com'),
-                currentAccountPicture: CircleAvatar(
-                  backgroundImage: AssetImage('assets/images/profilepic.png'),),
-
-                decoration: BoxDecoration(
-                  color: Color.fromRGBO(81, 212, 189, 1.0),
-                ),
-              ),
-
-
-              ListTile(
-
-                leading: Icon(Icons.home, size: 40.0, color: Colors.white,),
-                title: Text('Home', style: TextStyle(
-
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(
-                  Icons.manage_accounts, size: 40.0, color: Colors.white,),
-                title: Text('Profile', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(Icons.settings, size: 40.0, color: Colors.white,),
-                title: Text('Settings', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(Icons.account_balance_wallet, size: 40.0,
-                  color: Colors.white,),
-                title: Text('Accounts', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(
-                  Icons.currency_bitcoin, size: 40.0, color: Colors.white,),
-                title: Text('Savings', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(
-                  Icons.food_bank_sharp, size: 40.0, color: Colors.white,),
-                title: Text('Expenses', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(
-                  Icons.help_outline_sharp, size: 40.0, color: Colors.white,),
-                title: Text('Help & Support', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              ListTile(
-                leading: Icon(
-                  Icons.logout_sharp, size: 40.0, color: Colors.white,),
-                title: Text('Logout', style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-            ],
-          ),
-        ),
-
-      ),
     );
   }
 }
@@ -1054,4 +929,171 @@ class FinancialData{
 }
 
 
+class MyDrawer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
 
+    // TODO: implement build
+    return Drawer(
+      width: screenWidth / 1.6,
+      child: Container(
+        color: Color.fromRGBO(104, 157, 180, 1.0),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            UserAccountsDrawerHeader(
+              accountName: Text('John Smith'),
+              accountEmail: Text('johnsmith@email.com'),
+              currentAccountPicture: CircleAvatar(
+                backgroundImage: AssetImage('assets/images/profilepic.png'),
+              ),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(81, 212, 189, 1.0),
+              ),
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.home,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Home',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.manage_accounts,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Profile',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.settings,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Settings',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.account_balance_wallet,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Accounts',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.currency_bitcoin,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Savings',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.food_bank_sharp,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Expenses',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.help_outline_sharp,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Help & Support',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.logout_sharp,
+                size: 40.0,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
