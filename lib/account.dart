@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +5,6 @@ import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/database.dart';
-import 'package:thrifty/login.dart';
 import 'package:intl/intl.dart';
 
 int? id_session;
@@ -15,6 +13,10 @@ int transportationExpenseTotal=0;
 int utilitiesExpenseTotal=0;
 int entertainmentExpenseTotal=0;
 int othersExpenseTotal=0;
+double savingsTotal=0;
+String formattedSavingsTotal = '';
+
+
 
 
 class ViewAccount extends StatefulWidget {
@@ -27,6 +29,8 @@ class ViewAccount extends StatefulWidget {
 class _ViewAccountState extends State<ViewAccount> {
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _keyDialogForm_newGoal = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _keyDialogForm_newSavings = new GlobalKey<FormState>();
   TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
   String? _selectedCategory;
   double? _amount;
@@ -35,7 +39,21 @@ class _ViewAccountState extends State<ViewAccount> {
   DateTime? _Tempdate;
   DateTime pickedDate = DateTime.now();
   String formattedDate='';
+  String _newGoal = "";
+  double? _newGoalAmount;
+  String _newGoalDescription = "";
+  String? _currentGoal = "";
+  String formattedCurrentGoal='';
+  double _currentGoalAmount=0;
+  String? _currentGoalDescription;
+  double? _newSavingsAmount;
+  DateTime? _dateSavings;
+  double percentage =0;
+
+
+
   List<Map<String, dynamic>> recent_expenses = [];
+  List<Map<String, dynamic>> recent_savings = [];
   // These strings are for getting the value of the section of doughnut graph the user tapped.
   // This value is for the money.
   String tappedValue = '';
@@ -61,10 +79,6 @@ class _ViewAccountState extends State<ViewAccount> {
   // This boolean determines if the section of the doughnut graph is exploded or clicked.
   bool explode = true;
 
-  // Displays the current savings goal
-  // To be updated. This should be dynamic once database is completely implemented
-  String currentGoal = '\$3,563.00';
-
   // These booleans determines which kind text to display.
   // If top container is expanded, it will display the fully detailed current goal information
   bool _isColumnVisible = true;
@@ -84,6 +98,8 @@ class _ViewAccountState extends State<ViewAccount> {
 
   @override
   Widget build(BuildContext context) {
+
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
@@ -96,6 +112,7 @@ class _ViewAccountState extends State<ViewAccount> {
     }
 
     else{
+
       _chartData = getChartData();
       // Detects the width of the screen of the device to ensure gui compatibility and dynamic sizes
       final screenWidth = MediaQuery
@@ -109,10 +126,12 @@ class _ViewAccountState extends State<ViewAccount> {
     ]);
 
     return Scaffold(
+
       drawer: MyDrawer(),
       body: Builder(
         builder: (BuildContext context) {
           return Stack(
+
             children: [
 
               // Detects if the scrollable containers are being scrolled
@@ -200,6 +219,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                                                   .white),),
                                                       ),),
 
+
                                                     // New goal button
                                                     Padding(
                                                       padding: EdgeInsets.only(
@@ -208,6 +228,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                                           child: ElevatedButton(
                                                             onPressed: () {
                                                               // add your function here
+                                                              showAddGoalDialog();
                                                               // Top be updated once database is complete
                                                             },
                                                             child: Text(
@@ -238,8 +259,11 @@ class _ViewAccountState extends State<ViewAccount> {
                                                   mainAxisAlignment: MainAxisAlignment
                                                       .center,
                                                   children: [
-                                                    Text(
-                                                      currentGoal + '/',
+
+                                                    _currentGoalAmount==0
+                                                        ? Center(child: Text('No savings goal', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),))
+                                                    : Text(
+                                                      formattedSavingsTotal + '/',
                                                       style: TextStyle(
                                                         fontWeight: FontWeight
                                                             .bold,
@@ -248,7 +272,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      '\$ 5,000.00',
+                                                     formattedCurrentGoal,
                                                       style: TextStyle(
                                                         fontWeight: FontWeight
                                                             .bold,
@@ -273,7 +297,7 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                                           width: 250,
                                                           lineHeight: 14.0,
-                                                          percent: 0.5,
+                                                          percent: percentage,
 
                                                           backgroundColor: Colors
                                                               .grey,
@@ -295,8 +319,10 @@ class _ViewAccountState extends State<ViewAccount> {
                                           mainAxisAlignment: MainAxisAlignment
                                               .center,
                                           children: [
-                                            Text(
-                                              currentGoal + '/',
+                                            _currentGoalAmount==0
+                                                ? Center(child: Text('No savings goal', style: const TextStyle(fontSize: 20, color: Colors.white),))
+                                                : Text(
+                                               formattedSavingsTotal+'/',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 30,
@@ -304,8 +330,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                               ),
                                             ),
                                             Text(
-                                              '\$ 5,000.00',
-                                              style: TextStyle(
+                                              formattedCurrentGoal, style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 15,
                                                 color: Colors.white,
@@ -532,7 +557,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                         rows: recent_expenses
                                             .map((expense) => DataRow(cells: [
                                           DataCell(Text(expense['category'],style: TextStyle(color: getCategoryColor(expense['category'])),)),
-                                          DataCell(Text('\₱'+expense['amount'].toString())),
+                                          DataCell(Text(formatCurrency(expense['amount']))),
                                           // DataCell(Text(expense['note'])),
                                           DataCell(Text(expense['date'].toString())),
                                         ],
@@ -554,13 +579,9 @@ class _ViewAccountState extends State<ViewAccount> {
                                         ),
                                         );
                                         },
-
                                         )
                                         )
-
-
                                             .toList(),
-
                                           )]),
 
 
@@ -595,9 +616,75 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                     child: Padding(padding: EdgeInsets.all(15),
 
-                                      child: Text(
-                                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                                          style: TextStyle(fontSize: 20,)),
+                                      child: Column(
+                                        children: [
+                                          Text('Savings', style: TextStyle(fontSize: 20, color: Colors.green, fontWeight: FontWeight.bold),),
+
+                                          recent_savings.isEmpty
+                                              ? Center(child: Text('No Savings', style: const TextStyle(fontSize: 20),))
+                                              : DataTable(
+                                            showCheckboxColumn: false,
+                                            horizontalMargin: 10,
+                                            columnSpacing: 30,
+                                            columns: const [
+                                              DataColumn(label: Text('Amount')),
+                                              DataColumn(label: Text('Date')),
+                                            ],
+                                            rows: recent_savings
+                                                .map((savings) => DataRow(cells: [
+                                              DataCell(Text(formatCurrency(savings['amount']))),
+                                              DataCell(Text(savings['date'].toString())),
+                                            ],
+                                              onSelectChanged: (value) {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) => AlertDialog(
+                                                    title: Text('Savings Entry',
+                                                      style: TextStyle(color: Colors.green),),
+                                                    content: Text('Amount: \₱${savings['amount']} \nDate: ${savings['date']}'),
+                                                    actions: [
+
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context),
+                                                        child: Text('Close'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                            )
+                                                .toList(),
+                                          ),
+
+
+
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              // add your function here
+                                              showAddSavingsDialog();
+                                              // Top be updated once database is complete
+                                            },
+                                            child: Text(
+                                                'Add Savings'),
+                                            style: ElevatedButton
+                                                .styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius
+                                                      .circular(
+                                                      20), // set the radius value you want
+                                                ),
+                                                padding: EdgeInsets
+                                                    .symmetric(
+                                                  horizontal: 30,
+                                                  vertical: 10,)
+                                            ),
+                                          )
+
+
+                                        ],
+                                      )
+
                                     ),
                                   ),
                                 ),
@@ -722,6 +809,53 @@ class _ViewAccountState extends State<ViewAccount> {
     }
 
   }
+
+  getRecentSavings() async {
+    recent_savings.clear();
+    final query = db.select(db.savings)
+      ..where((savings) => savings.userid.equals(id_session))
+      ..orderBy([(savings) => OrderingTerm(expression: savings.date, mode: OrderingMode.desc)])
+      ..limit(10);
+    final result = await query.get();
+
+    print("Result: $result");
+    for (var row in result) {
+      final formatDate = DateFormat('yyyy-MM-dd').format(row.date!);
+      Map<String, dynamic> item = {
+        'amount': row.amount,
+        'date': formatDate,
+      };
+      recent_savings.add(item);
+    }
+
+  }
+
+
+  getCurrentGoal() async {
+    final query = db.select(db.goals)
+      ..where((goals) => goals.userid.equals(id_session));
+
+    final result = await query.get();
+    _currentGoal = result.first.title;
+    _currentGoalAmount = result.first.amount;
+    _currentGoalDescription = result.first.description;
+
+    formattedCurrentGoal = NumberFormat.currency(locale: 'fil_PH', symbol: '₱').format(_currentGoalAmount);
+
+
+  }
+
+  getTotalSavings() async {
+    final query = db.select(db.savings)..where((t) => t.userid.equals(id_session) & t.active.equals(1));
+    final results = await query.get();
+    final amounts = results.map((savings) => savings.amount).toList();
+
+    final double totalAmount = amounts.fold(0, (previousValue, currentValue) => previousValue + currentValue);
+
+    savingsTotal=totalAmount;
+    formattedSavingsTotal = NumberFormat.currency(locale: 'fil_PH', symbol: '₱').format(savingsTotal);
+  }
+
   Color getCategoryColor(String category) {
     switch (category) {
       case 'Food':
@@ -738,6 +872,15 @@ class _ViewAccountState extends State<ViewAccount> {
     }
   }
 
+  setSavingsInactive() async {
+
+    final query = db.update(db.savings)
+      ..where((savings) => savings.active.equals(1))
+      ..write(SavingsCompanion(active: Value(0)));
+
+    await query;
+  }
+
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
     getTotalFoodExpenses();
@@ -746,6 +889,11 @@ class _ViewAccountState extends State<ViewAccount> {
     getTotalUtilitiesExpenses();
     getTotalTransportationExpenses();
     getRecentExpenses();
+    getCurrentGoal();
+    getRecentSavings();
+    getTotalSavings();
+
+
 
     // Delay for 1 second to simulate database loading
     await Future.delayed(Duration(seconds: 1));
@@ -754,6 +902,29 @@ class _ViewAccountState extends State<ViewAccount> {
 
   Future<void> _loadData() async {
     await _loadDatabase();
+
+    if(savingsTotal!=0 && _currentGoalAmount!=0)
+    {
+      percentage = (savingsTotal/_currentGoalAmount);
+    }
+
+    else{
+      percentage=0;
+    }
+
+    if ((savingsTotal >= _currentGoalAmount!.toInt()) && (savingsTotal !=0))
+    {
+    showCongratsDialog(context);
+
+    }
+
+    if(_currentGoalAmount == 0)
+    {
+      showAddGoalDialogModal();
+    }
+
+
+
     setState(() {
       _isLoading = false;
     });
@@ -890,6 +1061,336 @@ class _ViewAccountState extends State<ViewAccount> {
         });
   }
 
+  Future showAddSavingsDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Form(
+              key: _keyDialogForm_newSavings,
+              child: Column(
+                children: <Widget>[
+
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Date'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter date';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      if (_Tempdate==null) {
+                        _dateSavings = DateTime.now();
+                      }
+                      else
+                      {_dateSavings = _Tempdate;}
+                      print(_date);
+                    },
+
+                    controller: dateInputController,
+                    readOnly: true,
+                    onTap: () async {
+                      pickedDate = (await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now()))!;
+
+                      print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
+                      formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                      print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                      dateInputController.text = formattedDate;
+                      _Tempdate=pickedDate;
+                      print(_Tempdate);
+
+                    },
+
+
+                  ),
+
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Amount'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _newSavingsAmount = double.parse(value!);
+                    },
+                  ),
+
+                ],
+              ),
+            ),
+
+
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_newSavings.currentState!.validate()) {
+                    _keyDialogForm_newSavings.currentState?.save();
+                    insertSavings();
+                    _loadData();
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Save'),
+
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+
+
+  Future showAddGoalDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Create new goal'),
+            content: Form(
+              key: _keyDialogForm_newGoal,
+              child: Column(
+                children: <Widget>[
+
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Name'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter goal name';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _currentGoal = value;
+                    },
+                  ),
+
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Amount'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _newGoalAmount = double.parse(value!);
+                    },
+                  ),
+
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Description'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your note';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _newGoalDescription = value!;
+                    },
+                  ),
+
+                ],
+              ),
+            ),
+
+
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_newGoal.currentState!.validate()) {
+                    _keyDialogForm_newGoal.currentState?.save();
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Confirmation'),
+                          content: Text('Are you sure you want to save this goal and replace current goal?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                insertGoal();
+                                _loadData();
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                              child: Text('Yes'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('No'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+                child: Text('Save'),
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+
+  Future showAddGoalDialogModal() {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return WillPopScope(
+              onWillPop: () async => false,
+           child: AlertDialog(
+            title: Text('Create new goal'),
+            content: Form(
+              key: _keyDialogForm_newGoal,
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Set to min to make the dialog box smaller
+
+                children: <Widget>[
+
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Name'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter goal name';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _currentGoal = value;
+                    },
+                  ),
+
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Amount'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _newGoalAmount = double.parse(value!);
+                    },
+                  ),
+
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Description'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your note';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _newGoalDescription = value!;
+                    },
+                  ),
+
+                ],
+              ),
+            ),
+
+
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_newGoal.currentState!.validate()) {
+                    _keyDialogForm_newGoal.currentState?.save();
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Confirmation'),
+                          content: Text('Create new goal?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                setSavingsInactive();
+                                insertGoal();
+                                _loadData();
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                              child: Text('Yes'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('No'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+                child: Text('Save'),
+              ),
+
+            ],
+          ));
+        });
+  }
+
+  // Create a function to show the alert dialog
+  void showCongratsDialog(BuildContext context) {
+    // Show the alert dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Congratulations!'),
+          content: Text('You have reached your savings goal.'),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                // Close the alert dialog
+                Navigator.of(context).pop();
+                showAddGoalDialogModal();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  String formatCurrency(double amount) {
+    final formatter = NumberFormat.currency(locale: 'fil_PH', symbol: '₱', decimalDigits: 2);
+    return formatter.format(amount);
+  }
 
   Future<void> insertExpense() async {
     try {
@@ -917,7 +1418,60 @@ class _ViewAccountState extends State<ViewAccount> {
     }
   }
 
+  Future<void> insertGoal() async {
+    try {
 
+      await db.batch((batch) {
+        batch.deleteWhere(db.goals, (tbl) => tbl.userid.equals(id_session));
+
+        batch.insertAll(
+          db.goals,
+          [
+            GoalsCompanion(
+              userid: Value(id_session!),
+              amount: Value(_newGoalAmount!),
+              description: Value(_newGoalDescription!),
+              title: Value(_newGoal!),
+            ),
+          ],
+        );
+
+
+      });
+    } on MoorWrappedException catch (e) {
+      if (e.cause.toString().contains('UNIQUE')) {
+        // handle the unique constraint violation error here
+        print('already exists');
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  Future<void> insertSavings() async {
+    try {
+      await db.batch((batch) {
+        batch.insertAll(
+          db.savings,
+          [
+            SavingsCompanion(
+              userid: Value(id_session!),
+              amount: Value(_newSavingsAmount!),
+              date: Value(_dateSavings),
+              active: Value(1),
+            ),
+          ],
+        );
+      });
+    } on MoorWrappedException catch (e) {
+      if (e.cause.toString().contains('UNIQUE')) {
+        // handle the unique constraint violation error here
+        print('already exists');
+      } else {
+        rethrow;
+      }
+    }
+  }
 
 }
 class FinancialData{

@@ -1,5 +1,5 @@
 import 'package:moor_flutter/moor_flutter.dart';
-import 'package:thrifty/signup.dart';
+// import 'package:thrifty/signup.dart';
 part 'database.g.dart';
 
 final db = AppDatabase();
@@ -26,7 +26,22 @@ class Expenses extends Table {
   DateTimeColumn get date => dateTime().nullable()();
 }
 
-@UseMoor(tables: [Users, Expenses])
+class Goals extends Table {
+  IntColumn get userid => integer()();
+  TextColumn get title => text()();
+  RealColumn get amount => real()();
+  TextColumn get description => text()();
+}
+
+class Savings extends Table {
+  IntColumn get userid => integer()();
+  IntColumn get active => integer()();
+  RealColumn get amount => real()();
+  DateTimeColumn get date => dateTime().nullable()();
+}
+
+
+@UseMoor(tables: [Users, Expenses, Goals, Savings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(
