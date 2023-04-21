@@ -1,4 +1,5 @@
 
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
@@ -6,6 +7,8 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/database.dart';
 import 'package:intl/intl.dart';
+
+
 
 int? id_session;
 int foodExpenseTotal=0;
@@ -49,7 +52,7 @@ class _ViewAccountState extends State<ViewAccount> {
   double? _newSavingsAmount;
   DateTime? _dateSavings;
   double percentage =0;
-
+  late ConfettiController _controller;
 
 
   List<Map<String, dynamic>> recent_expenses = [];
@@ -94,6 +97,7 @@ class _ViewAccountState extends State<ViewAccount> {
     _tooltipBehavior = TooltipBehavior(enable: true, duration: 5000);
     super.initState();
     _loadData();
+    _controller = ConfettiController(duration: const Duration(seconds: 1));
   }
 
   @override
@@ -1364,18 +1368,42 @@ class _ViewAccountState extends State<ViewAccount> {
 
   // Create a function to show the alert dialog
   void showCongratsDialog(BuildContext context) {
+    // Initialize the confetti widget
+    final confetti = ConfettiWidget(
+      confettiController: _controller,
+      blastDirectionality: BlastDirectionality.explosive,
+      shouldLoop: false,
+      particleDrag: 0.05,
+      emissionFrequency: 0.05,
+      numberOfParticles: 100,
+      gravity: 0.1,
+      maxBlastForce: 100,
+      minBlastForce: 80,
+      minimumSize: const Size(10, 10), // set a minimum size for particles
+      maximumSize: const Size(50, 50), // set a maximum size for particles
+      // set the bounds for the confetti to cover the entire screen
+    );
+
+    confetti.confettiController.play();
     // Show the alert dialog
     showDialog(
+
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Congratulations!'),
-          content: Text('You have reached your savings goal.'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Add the confetti widget to the dialog content
+              confetti,
+              Text('You have reached your savings goal.'),
+            ],
+          ),
           actions: [
             TextButton(
               child: Text('OK'),
               onPressed: () {
-                // Close the alert dialog
                 Navigator.of(context).pop();
                 showAddGoalDialogModal();
               },

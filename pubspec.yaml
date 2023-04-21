@@ -33,6 +33,8 @@ dependencies:
   syncfusion_flutter_charts: ^20.4.54
   percent_indicator: ^4.0.1
   moor_flutter: ^4.0.0
+  confetti: ^0.7.0
+
   #syncfusion_flutter_charts: ^19.1.54
 
 
