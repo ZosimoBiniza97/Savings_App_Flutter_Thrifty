@@ -446,9 +446,10 @@ class _ViewAccountState extends State<ViewAccount> {
                                           yValueMapper: (FinancialData data,
                                               _) => data.amount,
                                           pointColorMapper: (FinancialData data, _) => data.color,
+                                          dataLabelMapper: (FinancialData data,_) => chartPercentageCalculator(data.amount),
                                           dataLabelSettings: DataLabelSettings(
                                             isVisible: true,),
-                                          enableTooltip: true,
+                                          enableTooltip: false,
                                           explode: true,
                                           explodeGesture: ActivationMode
                                               .singleTap,
@@ -458,11 +459,9 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                           onPointTap: (
                                               pointInteractionDetails) {
-                                            tappedValue =
-                                                pointInteractionDetails
-                                                    .dataPoints![pointInteractionDetails
-                                                    .pointIndex!].y
-                                                    .toString() + "\n\n";
+                                            tappedValue = formatCurrencyInt(pointInteractionDetails
+                                                .dataPoints![pointInteractionDetails
+                                                .pointIndex!].y) + "\n\n";
                                             tappedValueCat =
                                                 pointInteractionDetails
                                                     .dataPoints![pointInteractionDetails
@@ -548,45 +547,47 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                           recent_expenses.isEmpty
                                            ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
-                                          : DataTable(
-                                        showCheckboxColumn: false,
-                                        horizontalMargin: 10,
-                                        columnSpacing: 30,
-                                        columns: const [
-                                          DataColumn(label: Text('Category')),
-                                          DataColumn(label: Text('Amount')),
-                                          // DataColumn(label: Text('Note')),
-                                          DataColumn(label: Text('Date')),
-                                        ],
-                                        rows: recent_expenses
-                                            .map((expense) => DataRow(cells: [
-                                          DataCell(Text(expense['category'],style: TextStyle(color: getCategoryColor(expense['category'])),)),
-                                          DataCell(Text(formatCurrency(expense['amount']))),
-                                          // DataCell(Text(expense['note'])),
-                                          DataCell(Text(expense['date'].toString())),
-                                        ],
-                                          onSelectChanged: (value) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) => AlertDialog(
-                                                title: Text(expense['category'],
-                                                style: TextStyle(color: getCategoryColor(expense['category'])),),
-                                                content: Text('Amount: \₱${expense['amount']} \nDate: ${expense['date']}\nNote: ${expense['note']}'),
-
-                                                  actions: [
-
-                                                  TextButton(
-                                                onPressed: () => Navigator.pop(context),
-                                                  child: Text('Close'),
-                                        ),
-                                        ],
-                                        ),
-                                        );
-                                        },
-                                        )
-                                        )
-                                            .toList(),
-                                          )]),
+                                          : SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: DataTable(
+                                              showCheckboxColumn: false,
+                                              horizontalMargin: 10,
+                                              columnSpacing: 30,
+                                              columns: const [
+                                                DataColumn(label: Text('Category')),
+                                                DataColumn(label: Text('Amount')),
+                                                DataColumn(label: Text('Date')),
+                                              ],
+                                              rows: recent_expenses
+                                                  .map((expense) => DataRow(
+                                                cells: [
+                                                  DataCell(Text(expense['category'], style: TextStyle(color: getCategoryColor(expense['category'])))),
+                                                  DataCell(Text(formatCurrency(expense['amount']))),
+                                                  DataCell(Text(expense['date'].toString())),
+                                                ],
+                                                onSelectChanged: (value) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog(
+                                                      title: Text(
+                                                        expense['category'],
+                                                        style: TextStyle(color: getCategoryColor(expense['category'])),
+                                                      ),
+                                                      content: Text('Amount: \₱${expense['amount']} \nDate: ${expense['date']}\nNote: ${expense['note']}'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () => Navigator.pop(context),
+                                                          child: Text('Close'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ))
+                                                  .toList(),
+                                            ),
+                                          ),
+                                        ]),
 
 
 
@@ -626,7 +627,9 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                           recent_savings.isEmpty
                                               ? Center(child: Text('No Savings', style: const TextStyle(fontSize: 20),))
-                                              : DataTable(
+                                              : SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                          child: DataTable(
                                             showCheckboxColumn: false,
                                             horizontalMargin: 10,
                                             columnSpacing: 30,
@@ -659,7 +662,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                             )
                                             )
                                                 .toList(),
-                                          ),
+                                          )),
 
 
 
@@ -909,7 +912,13 @@ class _ViewAccountState extends State<ViewAccount> {
 
     if(savingsTotal!=0 && _currentGoalAmount!=0)
     {
-      percentage = (savingsTotal/_currentGoalAmount);
+      if (savingsTotal<=_currentGoalAmount) {
+        percentage = (savingsTotal / _currentGoalAmount);
+      }
+      else
+        {
+          percentage = 1;
+        }
     }
 
     else{
@@ -1005,8 +1014,9 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
+                    maxLength: 7,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Amount'),
+                    decoration: InputDecoration(labelText: 'Amount',counterText: "",),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter amount';
@@ -1019,7 +1029,8 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Note'),
+                    maxLength: 50,
+                    decoration: InputDecoration(labelText: 'Note',counterText: "",),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your note';
@@ -1114,8 +1125,10 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
+                    maxLength: 7,
+
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Amount'),
+                    decoration: InputDecoration(labelText: 'Amount', counterText: "",),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter amount';
@@ -1174,7 +1187,8 @@ class _ViewAccountState extends State<ViewAccount> {
                 children: <Widget>[
 
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Name'),
+                    maxLength: 20,
+                    decoration: InputDecoration(labelText: 'Name', counterText: "",),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter goal name';
@@ -1187,8 +1201,9 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
+                    maxLength: 7,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Amount'),
+                    decoration: InputDecoration(labelText: 'Amount', counterText: "",),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter amount';
@@ -1201,7 +1216,8 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Description'),
+                    maxLength: 50,
+                    decoration: InputDecoration(labelText: 'Description', counterText: "",),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your note';
@@ -1280,7 +1296,8 @@ class _ViewAccountState extends State<ViewAccount> {
                 children: <Widget>[
 
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Name'),
+                    maxLength: 20,
+                    decoration: InputDecoration(labelText: 'Name', counterText: ""),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter goal name';
@@ -1293,8 +1310,9 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
+                    maxLength: 7,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Amount'),
+                    decoration: InputDecoration(labelText: 'Amount', counterText: ""),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter amount';
@@ -1307,7 +1325,8 @@ class _ViewAccountState extends State<ViewAccount> {
                   ),
 
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Description'),
+                    maxLength: 50,
+                    decoration: InputDecoration(labelText: 'Description',counterText: ""),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your note';
@@ -1416,6 +1435,18 @@ class _ViewAccountState extends State<ViewAccount> {
 
 
   String formatCurrency(double amount) {
+    final formatter = NumberFormat.currency(locale: 'fil_PH', symbol: '₱', decimalDigits: 2);
+    return formatter.format(amount);
+  }
+
+  String chartPercentageCalculator(int amount) {
+    final totalexpenses = entertainmentExpenseTotal+foodExpenseTotal+utilitiesExpenseTotal+transportationExpenseTotal+othersExpenseTotal;
+    final percentage = amount/totalexpenses;
+    final percentageFormatter = NumberFormat.percentPattern('en_US');
+    return percentageFormatter.format(percentage);
+  }
+
+  String formatCurrencyInt(int amount) {
     final formatter = NumberFormat.currency(locale: 'fil_PH', symbol: '₱', decimalDigits: 2);
     return formatter.format(amount);
   }
