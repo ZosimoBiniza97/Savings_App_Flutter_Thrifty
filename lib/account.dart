@@ -30,6 +30,38 @@ class ViewAccount extends StatefulWidget {
 }
 
 class _ViewAccountState extends State<ViewAccount> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+
+    if (_scrollController.offset <= _scrollController.position.minScrollExtent) {
+      // The scroll is overscrolled to the top
+      setState(() {
+        _isPressed = false;
+        topcontainerheight = 160;
+        _isColumnVisible = true;
+        _isSecondColumnVisible = false;
+      });
+    }
+
+    else
+    {
+      setState(() {
+        _isPressed = true;
+        topcontainerheight = 50;
+        _isColumnVisible = false;
+        _isSecondColumnVisible = true;
+      });
+    }
+  }
+
+
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
   final GlobalKey<FormState> _keyDialogForm_newGoal = new GlobalKey<FormState>();
@@ -74,7 +106,7 @@ class _ViewAccountState extends State<ViewAccount> {
   int selectedIndex = 100;
 
   // This is the height of the top container. This value will be changed to 50 when the container is tapped or if the scrollable containers are scrolled.
-  double topcontainerheight = 150;
+  double topcontainerheight = 160;
 
   // This boolean determines if the top container is pressed or not
   bool _isPressed = false;
@@ -94,6 +126,7 @@ class _ViewAccountState extends State<ViewAccount> {
 
   @override
   void initState() {
+    _scrollController.addListener(_onScroll);
     _tooltipBehavior = TooltipBehavior(enable: true, duration: 5000);
     super.initState();
     _loadData();
@@ -141,29 +174,8 @@ class _ViewAccountState extends State<ViewAccount> {
               // Detects if the scrollable containers are being scrolled
               // If it is scrolled, the top container will minimize
               NotificationListener<ScrollNotification>(
-                onNotification: (scrollNotification) {
-                  if (scrollNotification is ScrollUpdateNotification) {
-                    // Run your method here when the widget is being scrolled
-                    setState(() {
-                      _isPressed = true;
-                      topcontainerheight = 50;
-                      _isColumnVisible = false;
-                      _isSecondColumnVisible = true;
-                    });
-                  }
-                  // If user scrolled to the very top, the top container will re expand
-                  else if (scrollNotification is OverscrollNotification) {
-                    if (scrollNotification.overscroll < 0) {
-                      setState(() {
-                        _isPressed = false;
-                        topcontainerheight = 150;
-                        _isColumnVisible = true;
-                        _isSecondColumnVisible = false;
-                      });
-                    }
-                  }
-                  return false;
-                },
+
+
                 // Set up the background of the account page
                 child: Container(
                   decoration: BoxDecoration(
@@ -175,6 +187,7 @@ class _ViewAccountState extends State<ViewAccount> {
                   child: Align(
                     alignment: Alignment.center,
                     child: Column(
+
                         children: [
                           Container(
                             height: 50,
@@ -258,7 +271,7 @@ class _ViewAccountState extends State<ViewAccount> {
 
                                               // This displays the current savings goal
                                               Padding(padding: EdgeInsets.only(
-                                                  top: 5, left: 30),
+                                                  top: 5, ),
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment
                                                       .center,
@@ -267,7 +280,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                                     _currentGoalAmount==0
                                                         ? Center(child: Text('No savings goal', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),))
                                                     : Text(
-                                                      formattedSavingsTotal + '/',
+                                                      formattedSavingsTotal,
                                                       style: TextStyle(
                                                         fontWeight: FontWeight
                                                             .bold,
@@ -275,18 +288,18 @@ class _ViewAccountState extends State<ViewAccount> {
                                                         color: Colors.white,
                                                       ),
                                                     ),
-                                                    Text(
-                                                     formattedCurrentGoal,
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight
-                                                            .bold,
-                                                        fontSize: 15,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
+
                                                   ],
                                                 ),),
-
+                                              Text(
+                                                formattedCurrentGoal,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight
+                                                      .bold,
+                                                  fontSize: 15,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                               // This is the percent indicator at the bottom of the current goal
                                               // To be updated. This should be dynamic
                                               Row(
@@ -359,7 +372,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                     _isColumnVisible = false;
                                     _isSecondColumnVisible = true;
                                   } else {
-                                    topcontainerheight = 150;
+                                    topcontainerheight = 160;
                                     _isColumnVisible = true;
                                     _isSecondColumnVisible = false;
                                   }
@@ -373,6 +386,7 @@ class _ViewAccountState extends State<ViewAccount> {
                           // To be updated
                           Expanded(
                             child: ListView(
+                              controller: _scrollController,
                               children: [
                                 Padding(padding: EdgeInsets.only(
                                     left: screenWidth * 0.07,
@@ -721,6 +735,8 @@ class _ViewAccountState extends State<ViewAccount> {
     );
   }
 }
+
+
   List<Color> categoryColors = [
     Colors.lightBlueAccent, // Food
     Colors.blue, // Transportation
@@ -948,9 +964,12 @@ class _ViewAccountState extends State<ViewAccount> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Form(
+            title: Text('Record new expense'),
+            content: SingleChildScrollView(
+              child: Form(
               key: _keyDialogForm,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
 
                   TextFormField(
@@ -1044,7 +1063,7 @@ class _ViewAccountState extends State<ViewAccount> {
 
                 ],
               ),
-            ),
+            ),),
 
 
             actions: <Widget>[
@@ -1081,9 +1100,11 @@ class _ViewAccountState extends State<ViewAccount> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Form(
+            title: Text('Record new savings'),
+          content: Form(
               key: _keyDialogForm_newSavings,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
 
                   TextFormField(
@@ -1184,6 +1205,7 @@ class _ViewAccountState extends State<ViewAccount> {
             content: Form(
               key: _keyDialogForm_newGoal,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
 
                   TextFormField(
