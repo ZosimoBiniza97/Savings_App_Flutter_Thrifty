@@ -77,66 +77,99 @@ class _ExpensesPageState extends State<ExpensesPage> {
                       all_expenses.isEmpty
                           ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
                           : SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
+                                  scrollDirection: Axis.vertical,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: DataTable(
+                                      showCheckboxColumn: false,
+                                      horizontalMargin: 10,
+                                      columnSpacing:17,
+                                      columns: const [
+                                        DataColumn(
+                                            label: Text('',
+                                                style: TextStyle(
+                                                    color: Colors.transparent
+                                                ),
+                                            ),
 
-                        child: DataTable(
-                          showCheckboxColumn: false,
-                          horizontalMargin: 10,
-                          columnSpacing: 30,
-                          columns: const [
-                            DataColumn(label: Text('id', style: TextStyle(color: Colors.transparent))),
-                            DataColumn(label: Text('Category')),
-                            DataColumn(label: Text('Amount')),
-                            DataColumn(label: Text('Date')),
-                            DataColumn(label: Text('Edit')),
-                          ],
-                          rows: all_expenses
-                              .map((expense) => DataRow(
-                            cells: [
-                              DataCell(Text(expense['id'].toString(),style: TextStyle(color: Colors.transparent)), showEditIcon: false),
-                              DataCell(Text(
-                                  expense['category'],
-                                  style: TextStyle(color: getCategoryColor(expense['category'])))),
-                              DataCell(Text(formatCurrency(expense['amount']))),
-                              DataCell(Text(expense['date'].toString())),
-                              DataCell(
-                                IconButton(
-                                  icon: Icon(Icons.edit),
-                                  onPressed: () {
-                                    // Handle edit button press here
-                                    showEditExpenseDialog(expense['id'], expense['amount'], expense['category'], expense['note'], DateTime.parse(expense['date']));
-                                    // You can use the expense variable to access the row data
-                                    print('Edit pressed for ${expense['category']}');
-                                  },
-                                ),
-                              ),
-                            ],
-                            onSelectChanged: (value) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text(
-                                    expense['category'],
-                                    style: TextStyle(color: getCategoryColor(expense['category'])),
-                                  ),
-                                  content: Text(
-                                      'Amount: \₱${expense['amount']} \nDate: ${expense['date']}\nNote: ${expense['note']}'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: Text('Close'),
+                                        ),
+                                        DataColumn(label: Text('Category')),
+                                        DataColumn(label: Text('Amount')),
+                                        DataColumn(label: Text('Date')),
+                                        DataColumn(label: Text('Edit')),
+                                      ],
+                                      rows: all_expenses
+                                          .map((expense) => DataRow(
+                                                cells: [
+                                                  DataCell(
+                                                      Text(
+                                                          expense['']
+                                                              .toString(),
+                                                          style: TextStyle(
+                                                              color: Colors
+                                                                  .transparent)),
+                                                      showEditIcon: false),
+                                                  DataCell(Text(
+                                                      expense['category'],
+                                                      style: TextStyle(
+                                                          color: getCategoryColor(
+                                                              expense[
+                                                                  'category'])))),
+                                                  DataCell(Text(formatCurrency(
+                                                      expense['amount']))),
+                                                  DataCell(Text(expense['date']
+                                                      .toString())),
+                                                  DataCell(
+                                                    IconButton(
+                                                      icon: Icon(Icons.edit),
+                                                      onPressed: () {
+                                                        // Handle edit button press here
+                                                        showEditExpenseDialog(
+                                                            expense['id'],
+                                                            expense['amount'],
+                                                            expense['category'],
+                                                            expense['note'],
+                                                            DateTime.parse(
+                                                                expense[
+                                                                    'date']));
+                                                        // You can use the expense variable to access the row data
+                                                        print(
+                                                            'Edit pressed for ${expense['category']}');
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                                onSelectChanged: (value) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) =>
+                                                        AlertDialog(
+                                                      title: Text(
+                                                        expense['category'],
+                                                        style: TextStyle(
+                                                            color: getCategoryColor(
+                                                                expense[
+                                                                    'category'])),
+                                                      ),
+                                                      content: Text(
+                                                          'Amount: \₱${expense['amount']} \nDate: ${expense['date']}\nNote: ${expense['note']}'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                                  context),
+                                                          child: Text('Close'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ))
+                                          .toList(),
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              );
-                            },
-                          ))
-                              .toList(),
-                        )
-
-                      ),
-
-                    ]),),),
+                        ]),),),
               ]),
               ),]),
               IconButton(
