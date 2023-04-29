@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 
+
 class Login extends StatelessWidget {
 
 // Initializing login data types: Username and Password (textfields) for local database query
@@ -33,7 +34,6 @@ class Login extends StatelessWidget {
       ]);
 
       return MaterialApp(
-
         debugShowCheckedModeBanner: false,
         title: 'Login',
 

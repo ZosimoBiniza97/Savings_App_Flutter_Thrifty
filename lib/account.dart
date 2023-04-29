@@ -7,9 +7,10 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/database.dart';
 import 'package:intl/intl.dart';
+import 'package:thrifty/login.dart';
+import 'package:thrifty/expenses.dart';
 
-
-
+String currentPage = 'Home';
 int? id_session;
 int foodExpenseTotal=0;
 int transportationExpenseTotal=0;
@@ -20,7 +21,10 @@ double savingsTotal=0;
 String formattedSavingsTotal = '';
 
 
-
+class GlobalContextService {
+  static GlobalKey<NavigatorState> navigatorKey =
+  GlobalKey<NavigatorState>();
+}
 
 class ViewAccount extends StatefulWidget {
   get expenses => null;
@@ -139,6 +143,7 @@ class _ViewAccountState extends State<ViewAccount> {
 
     if (_isLoading) {
       return Scaffold(
+
         backgroundColor: Colors.white,
         body: Center(
           child: Container(
@@ -1604,7 +1609,13 @@ class MyDrawer extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ViewAccount()),
+                    );
+
+
               },
             ),
             ListTile(
@@ -1689,7 +1700,12 @@ class MyDrawer extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ExpensesPage()),
+                  );
+
               },
             ),
             ListTile(
@@ -1723,7 +1739,12 @@ class MyDrawer extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                id_session = null;
+                Navigator.of(context).pushAndRemoveUntil(
+                    new MaterialPageRoute(
+                        builder: (context) =>
+                        new Login()),
+                        (route) => false);
               },
             ),
           ],

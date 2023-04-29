@@ -19,6 +19,7 @@ class Users extends Table {
 }
 
 class Expenses extends Table {
+  IntColumn get id => integer().autoIncrement()();
   IntColumn get userid => integer()();
   TextColumn get category => text()();
   RealColumn get amount => real()();
