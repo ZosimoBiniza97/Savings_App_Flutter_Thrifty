@@ -83,7 +83,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                                     child: DataTable(
                                       showCheckboxColumn: false,
                                       horizontalMargin: 10,
-                                      columnSpacing:17,
+                                      columnSpacing:10,
                                       columns: const [
                                         DataColumn(
                                             label: Text('',
