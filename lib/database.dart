@@ -35,6 +35,7 @@ class Goals extends Table {
 }
 
 class Savings extends Table {
+  IntColumn get id => integer().autoIncrement()();
   IntColumn get userid => integer()();
   IntColumn get active => integer()();
   RealColumn get amount => real()();

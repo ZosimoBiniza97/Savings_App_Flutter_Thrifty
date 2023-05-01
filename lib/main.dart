@@ -81,10 +81,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
 
       title: 'My App',
-      home: Scaffold(
-        body:
+      home:
         Login(), // add the Login widget here
-      ),
+
     );
   }
 }

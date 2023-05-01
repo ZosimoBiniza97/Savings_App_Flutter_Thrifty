@@ -1,4 +1,6 @@
 
+import 'dart:async';
+
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +11,7 @@ import 'package:thrifty/database.dart';
 import 'package:intl/intl.dart';
 import 'package:thrifty/login.dart';
 import 'package:thrifty/expenses.dart';
+import 'package:thrifty/savings.dart';
 
 String currentPage = 'Home';
 int? id_session;
@@ -35,6 +38,9 @@ class ViewAccount extends StatefulWidget {
 
 class _ViewAccountState extends State<ViewAccount> {
   final ScrollController _scrollController = ScrollController();
+
+
+
 
   @override
   void dispose() {
@@ -166,8 +172,9 @@ class _ViewAccountState extends State<ViewAccount> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
       SystemUiOverlay.bottom
     ]);
-
-    return Scaffold(
+      return new WillPopScope(
+          onWillPop: () async => false,
+    child: Scaffold(
 
       drawer: MyDrawer(),
       body: Builder(
@@ -737,7 +744,7 @@ class _ViewAccountState extends State<ViewAccount> {
         },
       ),
 
-    );
+    ));
   }
 }
 
@@ -1613,6 +1620,7 @@ class MyDrawer extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ViewAccount()),
+
                     );
 
 
@@ -1683,7 +1691,12 @@ class MyDrawer extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SavingsPage()),
+                );
+
               },
             ),
             ListTile(

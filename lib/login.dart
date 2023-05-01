@@ -33,7 +33,9 @@ class Login extends StatelessWidget {
         SystemUiOverlay.bottom
       ]);
 
-      return MaterialApp(
+    return new WillPopScope(
+        onWillPop: () async => false,
+    child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Login',
 
@@ -300,7 +302,7 @@ class Login extends StatelessWidget {
               )
           ),
         ),
-      );
+      ));
     }
   }
 

@@ -47,7 +47,9 @@ class _ExpensesPageState extends State<ExpensesPage> {
     }
 
     else {
-    return Scaffold(
+      return new WillPopScope(
+          onWillPop: () async => false,
+    child: Scaffold(
       drawer: MyDrawer(),
       body: Builder(
         builder: (context) => Stack(
@@ -62,7 +64,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
               Column(
               children: [
-                Padding(padding: EdgeInsets.only(top:20)),
+                Padding(padding: EdgeInsets.only(top:40)),
                 Text('All Expenses', style: TextStyle(fontSize: 25, color: Colors.redAccent, fontWeight: FontWeight.bold),),
 
               Expanded(
@@ -85,30 +87,17 @@ class _ExpensesPageState extends State<ExpensesPage> {
                                       horizontalMargin: 10,
                                       columnSpacing:10,
                                       columns: const [
-                                        DataColumn(
-                                            label: Text('',
-                                                style: TextStyle(
-                                                    color: Colors.transparent
-                                                ),
-                                            ),
 
-                                        ),
                                         DataColumn(label: Text('Category')),
                                         DataColumn(label: Text('Amount')),
                                         DataColumn(label: Text('Date')),
                                         DataColumn(label: Text('Edit')),
+                                        DataColumn(label: Text('Delete')),
                                       ],
                                       rows: all_expenses
                                           .map((expense) => DataRow(
                                                 cells: [
-                                                  DataCell(
-                                                      Text(
-                                                          expense['']
-                                                              .toString(),
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .transparent)),
-                                                      showEditIcon: false),
+
                                                   DataCell(Text(
                                                       expense['category'],
                                                       style: TextStyle(
@@ -135,6 +124,38 @@ class _ExpensesPageState extends State<ExpensesPage> {
                                                         // You can use the expense variable to access the row data
                                                         print(
                                                             'Edit pressed for ${expense['category']}');
+                                                      },
+                                                    ),
+                                                  ),
+                                                  DataCell(
+                                                    IconButton(
+                                                      icon: Icon(Icons.remove),
+                                                      onPressed: () {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (BuildContext context) {
+                                                            return AlertDialog(
+                                                              title: Text('Confirm Delete'),
+                                                              content: Text('Are you sure you want to delete this expense record?'),
+                                                              actions: <Widget>[
+                                                                TextButton(
+                                                                  child: Text('Cancel'),
+                                                                  onPressed: () {
+                                                                    Navigator.of(context).pop();
+                                                                  },
+                                                                ),
+                                                                TextButton(
+                                                                  child: Text('Delete'),
+                                                                  onPressed: () {
+                                                                    expensesDelete(expense['id']);
+                                                                    _loadData();
+                                                                    Navigator.of(context).pop();
+                                                                  },
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                        );
                                                       },
                                                     ),
                                                   ),
@@ -182,7 +203,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
             ],
           ),
       ),
-    );}
+    ));}
   }
 
   Color getCategoryColor(String category) {
@@ -270,7 +291,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Record new expense'),
+            title: Text('Edit expense record'),
             content: SingleChildScrollView(
               child: Form(
                 key: _keyDialogForm,
@@ -398,6 +419,14 @@ class _ExpensesPageState extends State<ExpensesPage> {
             ],
           );
         });
+  }
+
+  expensesDelete(int id) async
+  {
+    final query = db.delete(db.expenses)
+      ..where((expenses) => expenses.id.equals(id))
+      ..go();
+    await query;
   }
 
 }
