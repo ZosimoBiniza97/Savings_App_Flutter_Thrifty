@@ -953,7 +953,7 @@ class _ViewAccountState extends State<ViewAccount> {
       percentage=0;
     }
 
-    if ((savingsTotal >= _currentGoalAmount!.toInt()) && (savingsTotal !=0))
+    if ((savingsTotal >= _currentGoalAmount.toInt()) && (savingsTotal !=0))
     {
     showCongratsDialog(context);
 
@@ -1523,8 +1523,8 @@ class _ViewAccountState extends State<ViewAccount> {
             GoalsCompanion(
               userid: Value(id_session!),
               amount: Value(_newGoalAmount!),
-              description: Value(_newGoalDescription!),
-              title: Value(_newGoal!),
+              description: Value(_newGoalDescription),
+              title: Value(_newGoal),
             ),
           ],
         );

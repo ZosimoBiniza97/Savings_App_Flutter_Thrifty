@@ -1,13 +1,7 @@
-
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/account.dart';
 import 'package:thrifty/database.dart';
-import 'package:thrifty/login.dart';
 import 'package:intl/intl.dart';
 
 
@@ -21,11 +15,11 @@ class ExpensesPage extends StatefulWidget {
 }
 
 class _ExpensesPageState extends State<ExpensesPage> {
-  @override
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
 
   void initState() {
+    super.initState();
    _loadData();
   }
 
@@ -269,7 +263,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
     final query = db.update(db.expenses)
       ..where((expenses) => expenses.id.equals(id))
-      ..write(ExpensesCompanion(amount: Value(newAmount), category: Value(newCategory), note: Value(newNote), date: Value(date as DateTime?)));
+      ..write(ExpensesCompanion(amount: Value(newAmount), category: Value(newCategory), note: Value(newNote), date: Value(date)));
 
     await query;
   }
@@ -401,7 +395,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                   if (_keyDialogForm.currentState!.validate()) {
                     _keyDialogForm.currentState?.save();
 
-                    expenseEdit(id, _amount!, _selectedCategory!, _note!, _date!);
+                    expenseEdit(id, _amount, _selectedCategory, _note, _date);
                     _loadData();
 
                     Navigator.pop(context);
