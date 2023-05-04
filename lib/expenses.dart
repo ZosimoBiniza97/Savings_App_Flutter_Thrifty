@@ -14,6 +14,17 @@ class ExpensesPage extends StatefulWidget {
 class _ExpensesPageState extends State<ExpensesPage> {
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _keyDialogForm_expense = new GlobalKey<FormState>();
+
+  TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  String? _selectedCategory;
+  DateTime? _date;
+  DateTime? _Tempdate;
+  DateTime pickedDate = DateTime.now();
+  String formattedDate='';
+  String formattedCurrentGoal='';
+  double? _amount;
+  String? _note;
 
   void initState() {
     super.initState();
@@ -213,6 +224,17 @@ class _ExpensesPageState extends State<ExpensesPage> {
                     },
                     padding: EdgeInsets.all(16.0),
                   ),
+                  Positioned(
+                    bottom: 16.0,
+                    right: 16.0,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        showAddExpenseDialog();
+                        _loadData();
+                      },
+                      child: Icon(Icons.add),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -314,7 +336,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
             title: Text('Edit expense record'),
             content: SingleChildScrollView(
               child: Form(
-                key: _keyDialogForm,
+                key: _keyDialogForm_expense,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -450,5 +472,164 @@ class _ExpensesPageState extends State<ExpensesPage> {
       ..where((expenses) => expenses.id.equals(id))
       ..go();
     await query;
+  }
+  Future showAddExpenseDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Record new expense'),
+            content: SingleChildScrollView(
+              child: Form(
+                key: _keyDialogForm_expense,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+
+                    TextFormField(
+                      decoration: InputDecoration(labelText: 'Date'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter date';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        if (_Tempdate==null) {
+                          _date = DateTime.now();
+                        }
+                        else
+                        {_date = _Tempdate;}
+                        print(_date);
+                      },
+
+                      controller: dateInputController,
+                      readOnly: true,
+                      onTap: () async {
+                        pickedDate = (await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(1950),
+                            lastDate: DateTime.now()))!;
+
+                        print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
+                        formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                        print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                        dateInputController.text = formattedDate;
+                        _Tempdate=pickedDate;
+                        print(_Tempdate);
+
+                      },
+
+
+                    ),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(labelText: 'Category'),
+                      value: _selectedCategory,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a category';
+                        }
+                        return null;
+                      },
+                      items: <String>['Food', 'Transportation', 'Utilities', 'Entertainment', 'Others']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+
+                    TextFormField(
+                      maxLength: 7,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(labelText: 'Amount',counterText: "",),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter amount';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _amount = double.parse(value!);
+                      },
+                    ),
+
+                    TextFormField(
+                      maxLength: 50,
+                      decoration: InputDecoration(labelText: 'Note',counterText: "",),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your note';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _note = value;
+                      },
+                    ),
+
+                  ],
+                ),
+              ),),
+
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_expense.currentState!.validate()) {
+                    _keyDialogForm_expense.currentState?.save();
+                    insertExpense();
+                    _loadData();
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Save'),
+
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+  Future<void> insertExpense() async {
+    try {
+      await db.batch((batch) {
+        batch.insertAll(
+          db.expenses,
+          [
+            ExpensesCompanion(
+              userid: Value(id_session!),
+              category: Value(_selectedCategory!),
+              amount: Value(_amount!),
+              note: Value(_note!),
+              date: Value(_date),
+            ),
+          ],
+        );
+      });
+    } on MoorWrappedException catch (e) {
+      if (e.cause.toString().contains('UNIQUE')) {
+        // handle the unique constraint violation error here
+        print('already exists');
+      } else {
+        rethrow;
+      }
+    }
   }
 }

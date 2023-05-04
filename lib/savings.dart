@@ -25,6 +25,15 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   List<Map<String, dynamic>> all_savings = [];
+  final GlobalKey<FormState> _keyDialogForm_newSavings = new GlobalKey<FormState>();
+  TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  DateTime? _date;
+  DateTime? _Tempdate;
+  DateTime pickedDate = DateTime.now();
+  String formattedDate='';
+  String formattedCurrentGoal='';
+  DateTime? _dateSavings;
+  double? _newSavingsAmount;
 
 
   Widget build(BuildContext context) {
@@ -173,6 +182,17 @@ class _SavingsPageState extends State<SavingsPage> {
                   Scaffold.of(context).openDrawer();
                 },
                 padding: EdgeInsets.all(16.0),
+              ),
+              Positioned(
+                bottom: 16.0,
+                right: 16.0,
+                child: FloatingActionButton(
+                  onPressed: () {
+                    showAddSavingsDialog();
+                    _loadData();
+                  },
+                  child: Icon(Icons.add),
+                ),
               ),
             ],
           ),
@@ -364,5 +384,128 @@ class _SavingsPageState extends State<SavingsPage> {
       ..go();
     await query;
   }
+  Future showAddSavingsDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Record new savings'),
+            content: Form(
+              key: _keyDialogForm_newSavings,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
 
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Date'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter date';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      if (_Tempdate==null) {
+                        _dateSavings = DateTime.now();
+                      }
+                      else
+                      {_dateSavings = _Tempdate;}
+                      print(_date);
+                    },
+
+                    controller: dateInputController,
+                    readOnly: true,
+                    onTap: () async {
+                      pickedDate = (await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now()))!;
+
+                      print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
+                      formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                      print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                      dateInputController.text = formattedDate;
+                      _Tempdate=pickedDate;
+                      print(_Tempdate);
+
+                    },
+
+
+                  ),
+
+                  TextFormField(
+                    maxLength: 7,
+
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Amount', counterText: "",),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _newSavingsAmount = double.parse(value!);
+                    },
+                  ),
+
+                ],
+              ),
+            ),
+
+
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_newSavings.currentState!.validate()) {
+                    _keyDialogForm_newSavings.currentState?.save();
+                    insertSavings();
+                    _loadData();
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Save'),
+
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    pickedDate=DateTime.now();
+                    formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    dateInputController.text = formattedDate;
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+
+  Future<void> insertSavings() async {
+    try {
+      await db.batch((batch) {
+        batch.insertAll(
+          db.savings,
+          [
+            SavingsCompanion(
+              userid: Value(id_session!),
+              amount: Value(_newSavingsAmount!),
+              date: Value(_dateSavings),
+              active: Value(1),
+            ),
+          ],
+        );
+      });
+    } on MoorWrappedException catch (e) {
+      if (e.cause.toString().contains('UNIQUE')) {
+        // handle the unique constraint violation error here
+        print('already exists');
+      } else {
+        rethrow;
+      }
+    }
+  }
 }
