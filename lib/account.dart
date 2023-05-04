@@ -790,13 +790,18 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
   getTotalFoodExpenses() async {
-    final query = db.select(db.expenses)..where((t) => t.userid.equals(id_session) & t.category.equals('Food'));
-    final results = await query.get();
-    final amounts = results.map((expense) => expense.amount).toList();
 
-    final int totalAmount = amounts.fold(0, (previousValue, currentValue) => previousValue.toInt() + currentValue.toInt());
+      final query = db.select(db.expenses)
+        ..where((t) => t.userid.equals(id_session) & t.category.equals('Food'));
+      final results = await query.get();
+      final amounts = results.map((expense) => expense.amount).toList();
 
-    foodExpenseTotal=totalAmount;
+      final int totalAmount = amounts.fold(
+          0, (previousValue, currentValue) => previousValue.toInt() +
+          currentValue.toInt());
+
+      foodExpenseTotal = totalAmount;
+
   }
 
   getTotalTransportationExpenses() async {
@@ -931,17 +936,26 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
   Future<void> _loadDatabase() async {
-    // Replace with your Moor database initialization code
-    await getTotalFoodExpenses();
-    await getTotalEntertainmentExpenses();
-    await getTotalOthersExpenses();
-    await getTotalUtilitiesExpenses();
-    await getTotalTransportationExpenses();
-    await getRecentExpenses();
-    await getCurrentGoal();
-    await getRecentSavings();
-    await getTotalSavings();
-    await getUserValues();
+
+    final functions = [
+      getTotalFoodExpenses,
+      getTotalEntertainmentExpenses,
+      getTotalOthersExpenses,
+      getTotalUtilitiesExpenses,
+      getTotalTransportationExpenses,
+      getRecentExpenses,
+      getCurrentGoal,
+      getRecentSavings,
+      getTotalSavings,
+      getUserValues,
+    ];
+
+    for (final function in functions) {
+      try {
+        await function();
+      } catch (e) {}
+    }
+
 
   }
 
