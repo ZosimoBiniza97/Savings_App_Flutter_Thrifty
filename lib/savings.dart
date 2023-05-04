@@ -241,11 +241,10 @@ class _SavingsPageState extends State<SavingsPage> {
   }
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
-    getAllSavings();
-
-
-    // Delay for 1 second to simulate database loading
-    await Future.delayed(Duration(seconds: 1));
+    try{
+      getAllSavings();
+  }
+  catch (e) {}
 
   }
 

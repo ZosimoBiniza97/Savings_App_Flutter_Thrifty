@@ -25,7 +25,7 @@ class _SignUpPageState extends State<SignUpPage> {
   void _submitForm() {
     _formKey.currentState?.save();
     if (_formKey.currentState!.validate()) {
-      // TODO: Add registration logic here
+
       insertSampleUser();
       print('password: $_password');
       print('username: $_username');
@@ -236,8 +236,21 @@ class _SignUpPageState extends State<SignUpPage> {
             password: Value(_password),
           ),
         );
+        showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(
+                  title: Text('Success'),
+                  content: Text('Account created successfully'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.push( context, MaterialPageRoute(builder: (context) => Login()) ),
+                      child:
+                      Text('Ok'),
+                    ),
+                  ],
+                ),);
 
-        Navigator.push( context, MaterialPageRoute(builder: (context) => Login()) );
       }
       on MoorWrappedException catch (e) {
         if (e.cause.toString().contains('UNIQUE')) {

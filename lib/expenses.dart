@@ -289,11 +289,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
-    getAllExpenses();
-
-    // Delay for 1 second to simulate database loading
-    await Future.delayed(Duration(seconds: 1));
+    try {
+      getAllExpenses();
+    }
+    catch (e) {}
   }
+
 
   Future<void> _loadData() async {
     await _loadDatabase();
