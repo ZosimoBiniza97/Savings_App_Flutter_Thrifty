@@ -189,7 +189,6 @@ class _SavingsPageState extends State<SavingsPage> {
                 child: FloatingActionButton(
                   onPressed: () {
                     showAddSavingsDialog();
-                    _loadData();
                   },
                   child: Icon(Icons.add),
                 ),

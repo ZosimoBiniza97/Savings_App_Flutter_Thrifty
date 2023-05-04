@@ -230,7 +230,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
                     child: FloatingActionButton(
                       onPressed: () {
                         showAddExpenseDialog();
-                        _loadData();
                       },
                       child: Icon(Icons.add),
                     ),
