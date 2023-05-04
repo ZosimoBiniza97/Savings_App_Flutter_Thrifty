@@ -11,6 +11,7 @@ import 'package:thrifty/database.dart';
 import 'package:intl/intl.dart';
 import 'package:thrifty/login.dart';
 import 'package:thrifty/expenses.dart';
+import 'package:thrifty/profile.dart';
 import 'package:thrifty/savings.dart';
 
 String currentPage = 'Home';
@@ -22,7 +23,11 @@ int entertainmentExpenseTotal=0;
 int othersExpenseTotal=0;
 double savingsTotal=0;
 String formattedSavingsTotal = '';
-
+String firstname = '';
+String lastname = '';
+String username = '';
+String email = '';
+String password = '';
 
 class GlobalContextService {
   static GlobalKey<NavigatorState> navigatorKey =
@@ -95,6 +100,7 @@ class _ViewAccountState extends State<ViewAccount> {
   DateTime? _dateSavings;
   double percentage =0;
   late ConfettiController _controller;
+
 
 
   List<Map<String, dynamic>> recent_expenses = [];
@@ -429,7 +435,7 @@ class _ViewAccountState extends State<ViewAccount> {
                                         Container( height: 400,
 
                                         child: _chartData.isEmpty
-                                        ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
+                                        ? Center(child: Text('No Expenses', style: const TextStyle(fontSize: 20),))
 
                                         : SfCircularChart(
                                           centerY: '100',
@@ -572,7 +578,10 @@ class _ViewAccountState extends State<ViewAccount> {
                                           Text('Recent Expenses', style: TextStyle(fontSize: 20, color: Colors.deepOrangeAccent, fontWeight: FontWeight.bold),),
 
                                           recent_expenses.isEmpty
-                                           ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
+                                           ? Padding(
+                                              padding: EdgeInsets.only(top: 20, bottom: 20),
+                                              child: Center(child: Text('No Expenses', style: const TextStyle(fontSize: 20),))
+                                          )
                                           : SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
                                             child: DataTable(
@@ -652,7 +661,12 @@ class _ViewAccountState extends State<ViewAccount> {
                                           Text('Savings', style: TextStyle(fontSize: 20, color: Colors.green, fontWeight: FontWeight.bold),),
 
                                           recent_savings.isEmpty
-                                              ? Center(child: Text('No Savings', style: const TextStyle(fontSize: 20),))
+                                              ? Padding(
+                                            padding: EdgeInsets.only(top: 20, bottom: 20),
+                                              child: Center(child: Text('No Savings', style: const TextStyle(fontSize: 20),))
+                                          )
+
+
                                               : SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
                                           child: DataTable(
@@ -918,26 +932,21 @@ class _ViewAccountState extends State<ViewAccount> {
 
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
-    getTotalFoodExpenses();
-    getTotalEntertainmentExpenses();
-    getTotalOthersExpenses();
-    getTotalUtilitiesExpenses();
-    getTotalTransportationExpenses();
-    getRecentExpenses();
-    getCurrentGoal();
-    getRecentSavings();
-    getTotalSavings();
-
-
-
-    // Delay for 1 second to simulate database loading
-    await Future.delayed(Duration(seconds: 1));
+    await getTotalFoodExpenses();
+    await getTotalEntertainmentExpenses();
+    await getTotalOthersExpenses();
+    await getTotalUtilitiesExpenses();
+    await getTotalTransportationExpenses();
+    await getRecentExpenses();
+    await getCurrentGoal();
+    await getRecentSavings();
+    await getTotalSavings();
+    await getUserValues();
 
   }
 
   Future<void> _loadData() async {
     await _loadDatabase();
-
     if(savingsTotal!=0 && _currentGoalAmount!=0)
     {
       if (savingsTotal<=_currentGoalAmount) {
@@ -1567,6 +1576,23 @@ class _ViewAccountState extends State<ViewAccount> {
   }
 
 }
+
+getUserValues() async {
+
+  final query = db.select(db.users)
+    ..where((users) => users.id.equals(id_session));
+  final result = await query.get();
+
+
+    firstname = result.first.firstname;
+    lastname = result.first.lastname;
+    username = result.first.username;
+    email = result.first.email;
+    password = result.first.password;
+
+}
+
+
 class FinancialData{
   FinancialData(this.expense, this.amount, this.color);
   final String expense;
@@ -1593,8 +1619,8 @@ class MyDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text('John Smith'),
-              accountEmail: Text('johnsmith@email.com'),
+              accountName: Text(firstname + ' ' + lastname),
+              accountEmail: Text(email),
               currentAccountPicture: CircleAvatar(
                 backgroundImage: AssetImage('assets/images/profilepic.png'),
               ),
@@ -1620,7 +1646,6 @@ class MyDrawer extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ViewAccount()),
-
                     );
 
 
@@ -1640,43 +1665,48 @@ class MyDrawer extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+
+                );
+
               },
             ),
-            ListTile(
-              leading: Icon(
-                Icons.settings,
-                size: 40.0,
-                color: Colors.white,
-              ),
-              title: Text(
-                'Settings',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.account_balance_wallet,
-                size: 40.0,
-                color: Colors.white,
-              ),
-              title: Text(
-                'Accounts',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(
+            //     Icons.settings,
+            //     size: 40.0,
+            //     color: Colors.white,
+            //   ),
+            //   title: Text(
+            //     'Settings',
+            //     style: TextStyle(
+            //       color: Colors.white,
+            //       fontSize: 20,
+            //     ),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //   },
+            // ),
+            // ListTile(
+            //   leading: Icon(
+            //     Icons.account_balance_wallet,
+            //     size: 40.0,
+            //     color: Colors.white,
+            //   ),
+            //   title: Text(
+            //     'Accounts',
+            //     style: TextStyle(
+            //       color: Colors.white,
+            //       fontSize: 20,
+            //     ),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //   },
+            // ),
             ListTile(
               leading: Icon(
                 Icons.currency_bitcoin,

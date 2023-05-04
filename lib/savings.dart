@@ -1,13 +1,8 @@
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:thrifty/account.dart';
 import 'package:thrifty/database.dart';
-import 'package:thrifty/login.dart';
 import 'package:intl/intl.dart';
 
 
@@ -21,11 +16,11 @@ class SavingsPage extends StatefulWidget {
 }
 
 class _SavingsPageState extends State<SavingsPage> {
-  @override
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
 
   void initState() {
+    super.initState();
     _loadData();
   }
 
@@ -357,7 +352,7 @@ class _SavingsPageState extends State<SavingsPage> {
 
     final query = db.update(db.savings)
       ..where((savings) => savings.id.equals(id))
-      ..write(SavingsCompanion(amount: Value(newAmount), date: Value(date as DateTime?)));
+      ..write(SavingsCompanion(amount: Value(newAmount), date: Value(date)));
 
     await query;
   }

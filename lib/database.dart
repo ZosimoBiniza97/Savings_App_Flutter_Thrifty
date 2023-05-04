@@ -1,21 +1,16 @@
 import 'package:moor_flutter/moor_flutter.dart';
-// import 'package:thrifty/signup.dart';
 part 'database.g.dart';
 
 final db = AppDatabase();
 
 class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer()();
   TextColumn get firstname => text()();
   TextColumn get lastname => text()();
   TextColumn get username => text()();
   TextColumn get email => text()();
   TextColumn get password => text()();
 
-  @override
-  List<String> get customConstraints => [
-    'UNIQUE (username, email)'
-  ];
 }
 
 class Expenses extends Table {

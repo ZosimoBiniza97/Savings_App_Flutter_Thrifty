@@ -3,13 +3,15 @@ import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:thrifty/database.dart';
 import 'package:thrifty/login.dart';
 
+
 class SignUpPage extends StatefulWidget {
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  static const primaryColor = Color(0xFF151026);
+
+
   final _formKey = GlobalKey<FormState>();
 
   String _firstName = '';
@@ -19,6 +21,7 @@ class _SignUpPageState extends State<SignUpPage> {
   String _password = '';
   String _confirmPassword = '';
 
+
   void _submitForm() {
     _formKey.currentState?.save();
     if (_formKey.currentState!.validate()) {
@@ -27,10 +30,7 @@ class _SignUpPageState extends State<SignUpPage> {
       print('password: $_password');
       print('username: $_username');
       print('_confirmPassword: $_confirmPassword');
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Login())
-      );
+
     }
   }
 
@@ -41,7 +41,6 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Sign Up'),
-        brightness: Brightness.light,
         backgroundColor: Colors.teal,
         elevation: 0.0,
       ),
@@ -80,6 +79,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     TextFormField(
+                      initialValue: 'John',
                       decoration: InputDecoration(labelText: 'First Name'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -92,6 +92,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                     TextFormField(
+                      initialValue: 'Smith',
                       decoration: InputDecoration(labelText: 'Last Name'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -104,6 +105,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                     TextFormField(
+                      initialValue: 'admin1',
                       decoration: InputDecoration(labelText: 'Username'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -116,6 +118,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                     TextFormField(
+                      initialValue: 'Johnsmith@gmail.com',
                       decoration: InputDecoration(labelText: 'Email'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -129,6 +132,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                     TextFormField(
+                      initialValue: 'admin',
                       decoration: InputDecoration(labelText: 'Password'),
                       obscureText: true,
                       validator: (value) {
@@ -142,6 +146,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                     TextFormField(
+                      initialValue: 'admin',
                       decoration: InputDecoration(labelText: 'Confirm Password'),
                       obscureText: true,
                       validator: (value) {
@@ -178,27 +183,96 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> insertSampleUser() async {
-    try {
-      await db.into(db.users).insert(
-        UsersCompanion(
-          firstname: Value(_firstName),
-          lastname: Value(_lastName),
-          username: Value(_username),
-          email: Value(_email),
-          password: Value(_password),
-        ),
+    if (await checkUsername(_username)) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Username already exists'),
+            content: Text('Please use a different username.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Ok'),
+              ),
+            ],
+          );
+        },
       );
     }
-    on MoorWrappedException catch (e) {
-      if (e.cause.toString().contains('UNIQUE')) {
-        // handle the unique constraint violation error here
-        print('already exists');
-      } else {
-        rethrow;
+
+    else if (await checkEmail(_email)) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Email already exists'),
+            content: Text('Please use a different email.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Ok'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    else {
+      try {
+
+        await db.into(db.users).insert(
+          UsersCompanion(
+            id: Value(await getUsersCount()),
+            firstname: Value(_firstName),
+            lastname: Value(_lastName),
+            username: Value(_username),
+            email: Value(_email),
+            password: Value(_password),
+          ),
+        );
+
+        Navigator.push( context, MaterialPageRoute(builder: (context) => Login()) );
+      }
+      on MoorWrappedException catch (e) {
+        if (e.cause.toString().contains('UNIQUE')) {
+          // handle the unique constraint violation error here
+        } else {
+          rethrow;
+        }
       }
     }
   }
 
+  Future<bool> checkUsername(String username) async {
+
+    // Use the select statement to retrieve the row from the users table with the matching username and password
+    final query = db.select(db.users)..where((u) => u.username.equals(username));
+    final result = await query.get();
+
+    // Return true if the result is not empty, indicating a matching user was found
+    return result.isNotEmpty;
+  }
+
+  Future<bool> checkEmail(String email) async {
+
+    // Use the select statement to retrieve the row from the users table with the matching username and password
+    final query = db.select(db.users)..where((u) => u.email.equals(email));
+    final result = await query.get();
+
+    // Return true if the result is not empty, indicating a matching user was found
+    return result.isNotEmpty;
+  }
+
+Future<int> getUsersCount() async {
+    final countResult = await db.customSelect('SELECT COUNT(*) FROM users').getSingle();
+    return (countResult.data.values.first+1) as int;
+  }
 
 }
 

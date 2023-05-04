@@ -85,6 +85,8 @@ flutter:
     - assets/images/background.png
     - assets/images/profile.jpg
     - assets/images/profilepic.png
+    - assets/images/profilepicture.png
+    - assets/images/profilebg.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

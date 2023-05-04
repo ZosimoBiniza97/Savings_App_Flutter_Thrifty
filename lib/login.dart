@@ -4,25 +4,33 @@ import 'package:thrifty/database.dart';
 import 'package:thrifty/signup.dart';
 import 'package:thrifty/main.dart';
 import 'account.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
 
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
 // Initializing login data types: Username and Password (textfields) for local database query
   final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
-  String Username='';
-  String Password='';
-  bool isLoggedIn = false;
-  int? id_session_login;
 
+  final passwordController = TextEditingController();
+
+  String Username='';
+
+  String Password='';
+
+  bool isLoggedIn = false;
+
+  int? id_session_login;
 
   @override
     Widget build(BuildContext context) {
-    insertSampleUser();
+    // insertSampleUser();
     // insertSampleExpenses();
 
     // Calling auths method to see if authentication is successful
@@ -304,7 +312,7 @@ class Login extends StatelessWidget {
         ),
       ));
     }
-  }
+}
 
   // This is a database method. This method will check if the Username and Password submitted by the user exists in the database
 Future<int?> checkLogin(String username, String password) async {
@@ -314,31 +322,34 @@ Future<int?> checkLogin(String username, String password) async {
   final result = await query.get();
 
   // Return true if the result is not empty, indicating a matching user was found
+
   return result.isNotEmpty ? result.first.id: null;
+
+
 }
 
 // This is a test method that inserts a sample user data to the user table in the schema
-Future<void> insertSampleUser() async {
-  try {
-    await db.into(db.users).insert(
-      UsersCompanion(
-        firstname: Value('Zeus'),
-        lastname: Value('Biniza'),
-        username: Value('admin'),
-        email: Value('johndoe@example.com'),
-        password: Value('admin'),
-      ),
-    );
-  }
-  on DatabaseException catch (e) {
-    if (e.toString().contains('UNIQUE')) {
-      // handle the unique constraint violation error here
-      print('already exists');
-    } else {
-      rethrow;
-    }
-  }
-}
+// Future<void> insertSampleUser() async {
+//   try {
+//     await db.into(db.users).insert(
+//       UsersCompanion(
+//         firstname: Value('Zeus'),
+//         lastname: Value('Biniza'),
+//         username: Value('admin'),
+//         email: Value('johndoe@example.com'),
+//         password: Value('admin'),
+//       ),
+//     );
+//   }
+//   on DatabaseException catch (e) {
+//     if (e.toString().contains('UNIQUE')) {
+//       // handle the unique constraint violation error here
+//       print('already exists');
+//     } else {
+//       rethrow;
+//     }
+//   }
+// }
 
 // Future<void> insertSampleExpenses() async {
 //   try {
