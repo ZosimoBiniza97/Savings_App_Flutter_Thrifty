@@ -13,7 +13,7 @@ class ExpensesPage extends StatefulWidget {
 
 class _ExpensesPageState extends State<ExpensesPage> {
   bool _isLoading = true;
-  final GlobalKey<FormState> _keyDialogForm = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _keyDialogForm_edit = new GlobalKey<FormState>();
   final GlobalKey<FormState> _keyDialogForm_expense = new GlobalKey<FormState>();
 
   TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
@@ -335,7 +335,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
             title: Text('Edit expense record'),
             content: SingleChildScrollView(
               child: Form(
-                key: _keyDialogForm_expense,
+                key: _keyDialogForm_edit,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -445,11 +445,11 @@ class _ExpensesPageState extends State<ExpensesPage> {
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
-                  if (_keyDialogForm.currentState!.validate()) {
-                    _keyDialogForm.currentState?.save();
+                  if (_keyDialogForm_edit.currentState!.validate()) {
+                    _keyDialogForm_edit.currentState?.save();
 
                     expenseEdit(id, _amount, _selectedCategory, _note, _date);
-
+                    _loadData();
                     Navigator.pop(context);
                   }
                 },
