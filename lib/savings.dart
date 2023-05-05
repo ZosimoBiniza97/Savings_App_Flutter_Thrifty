@@ -240,10 +240,7 @@ class _SavingsPageState extends State<SavingsPage> {
   }
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
-    try{
-      getAllSavings();
-  }
-  catch (e) {}
+      await getAllSavings();
 
   }
 
@@ -348,7 +345,6 @@ class _SavingsPageState extends State<SavingsPage> {
 
                     savingsEdit(id, _amount, _date);
                     _loadData();
-
                     Navigator.pop(context);
                   }
                 },
@@ -483,7 +479,7 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   Future<void> insertSavings() async {
-    try {
+
       await db.batch((batch) {
         batch.insertAll(
           db.savings,
@@ -497,13 +493,6 @@ class _SavingsPageState extends State<SavingsPage> {
           ],
         );
       });
-    } on MoorWrappedException catch (e) {
-      if (e.cause.toString().contains('UNIQUE')) {
-        // handle the unique constraint violation error here
-        print('already exists');
-      } else {
-        rethrow;
-      }
-    }
+
   }
 }

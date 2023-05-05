@@ -288,12 +288,9 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
-    try {
-      getAllExpenses();
-    }
-    catch (e) {}
-  }
 
+   await getAllExpenses();
+  }
 
   Future<void> _loadData() async {
     await _loadDatabase();
@@ -314,6 +311,8 @@ class _ExpensesPageState extends State<ExpensesPage> {
           date: Value(date)));
 
     await query;
+    _loadData();
+
   }
 
   Future showEditExpenseDialog(int id, double oldAmount, String oldCategory,
@@ -450,7 +449,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
                     _keyDialogForm.currentState?.save();
 
                     expenseEdit(id, _amount, _selectedCategory, _note, _date);
-                    _loadData();
 
                     Navigator.pop(context);
                   }
@@ -586,6 +584,8 @@ class _ExpensesPageState extends State<ExpensesPage> {
                     _keyDialogForm_expense.currentState?.save();
                     insertExpense();
                     _loadData();
+
+
                     pickedDate=DateTime.now();
                     formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                     dateInputController.text = formattedDate;
@@ -630,6 +630,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
       } else {
         rethrow;
       }
+
     }
   }
 }
