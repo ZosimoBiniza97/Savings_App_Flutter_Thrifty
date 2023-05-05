@@ -14,15 +14,17 @@ class ExpensesPage extends StatefulWidget {
 class _ExpensesPageState extends State<ExpensesPage> {
   bool _isLoading = true;
   final GlobalKey<FormState> _keyDialogForm_edit = new GlobalKey<FormState>();
-  final GlobalKey<FormState> _keyDialogForm_expense = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _keyDialogForm_expense =
+      new GlobalKey<FormState>();
 
-  TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  TextEditingController dateInputController = TextEditingController(
+      text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
   String? _selectedCategory;
   DateTime? _date;
   DateTime? _Tempdate;
   DateTime pickedDate = DateTime.now();
-  String formattedDate='';
-  String formattedCurrentGoal='';
+  String formattedDate = '';
+  String formattedCurrentGoal = '';
   double? _amount;
   String? _note;
 
@@ -289,7 +291,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
 
-   await getAllExpenses();
+    await getAllExpenses();
   }
 
   Future<void> _loadData() async {
@@ -311,7 +313,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
           date: Value(date)));
 
     await query;
-
   }
 
   Future showEditExpenseDialog(int id, double oldAmount, String oldCategory,
@@ -470,6 +471,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
       ..go();
     await query;
   }
+
   Future showAddExpenseDialog() {
     return showDialog(
         context: context,
@@ -482,7 +484,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-
                     TextFormField(
                       decoration: InputDecoration(labelText: 'Date'),
                       validator: (value) {
@@ -492,14 +493,13 @@ class _ExpensesPageState extends State<ExpensesPage> {
                         return null;
                       },
                       onSaved: (value) {
-                        if (_Tempdate==null) {
+                        if (_Tempdate == null) {
                           _date = DateTime.now();
+                        } else {
+                          _date = _Tempdate;
                         }
-                        else
-                        {_date = _Tempdate;}
                         print(_date);
                       },
-
                       controller: dateInputController,
                       readOnly: true,
                       onTap: () async {
@@ -509,16 +509,16 @@ class _ExpensesPageState extends State<ExpensesPage> {
                             firstDate: DateTime(1950),
                             lastDate: DateTime.now()))!;
 
-                        print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
-                        formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                        print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                        print(
+                            pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                        formattedDate =
+                            DateFormat('yyyy-MM-dd').format(pickedDate);
+                        print(
+                            formattedDate); //formatted date output using intl package =>  2021-03-16
                         dateInputController.text = formattedDate;
-                        _Tempdate=pickedDate;
+                        _Tempdate = pickedDate;
                         print(_Tempdate);
-
                       },
-
-
                     ),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Category'),
@@ -534,19 +534,26 @@ class _ExpensesPageState extends State<ExpensesPage> {
                         }
                         return null;
                       },
-                      items: <String>['Food', 'Transportation', 'Utilities', 'Entertainment', 'Others']
-                          .map<DropdownMenuItem<String>>((String value) {
+                      items: <String>[
+                        'Food',
+                        'Transportation',
+                        'Utilities',
+                        'Entertainment',
+                        'Others'
+                      ].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
                         );
                       }).toList(),
                     ),
-
                     TextFormField(
                       maxLength: 7,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: 'Amount',counterText: "",),
+                      decoration: InputDecoration(
+                        labelText: 'Amount',
+                        counterText: "",
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter amount';
@@ -557,10 +564,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
                         _amount = double.parse(value!);
                       },
                     ),
-
                     TextFormField(
                       maxLength: 50,
-                      decoration: InputDecoration(labelText: 'Note',counterText: "",),
+                      decoration: InputDecoration(
+                        labelText: 'Note',
+                        counterText: "",
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your note';
@@ -571,11 +580,10 @@ class _ExpensesPageState extends State<ExpensesPage> {
                         _note = value;
                       },
                     ),
-
                   ],
                 ),
-              ),),
-
+              ),
+            ),
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
@@ -584,19 +592,17 @@ class _ExpensesPageState extends State<ExpensesPage> {
                     insertExpense();
                     _loadData();
 
-
-                    pickedDate=DateTime.now();
+                    pickedDate = DateTime.now();
                     formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                     dateInputController.text = formattedDate;
                     Navigator.pop(context);
                   }
                 },
                 child: Text('Save'),
-
               ),
               ElevatedButton(
                   onPressed: () {
-                    pickedDate=DateTime.now();
+                    pickedDate = DateTime.now();
                     formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                     dateInputController.text = formattedDate;
                     Navigator.pop(context);
@@ -606,6 +612,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
           );
         });
   }
+
   Future<void> insertExpense() async {
     try {
       await db.batch((batch) {
@@ -629,7 +636,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
       } else {
         rethrow;
       }
-
     }
   }
 }

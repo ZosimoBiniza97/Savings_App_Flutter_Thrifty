@@ -1,18 +1,14 @@
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:thrifty/account.dart';
 import 'package:thrifty/database.dart';
-import 'package:intl/intl.dart';
-
-
 
 class SavingsPage extends StatefulWidget {
   get expenses => null;
+
   @override
   _SavingsPageState createState() => _SavingsPageState();
-
-
 }
 
 class _SavingsPageState extends State<SavingsPage> {
@@ -25,178 +21,209 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   List<Map<String, dynamic>> all_savings = [];
-  final GlobalKey<FormState> _keyDialogForm_newSavings = new GlobalKey<FormState>();
-  TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  final GlobalKey<FormState> _keyDialogForm_newSavings =
+      new GlobalKey<FormState>();
+  TextEditingController dateInputController = TextEditingController(
+      text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
   DateTime? _date;
   DateTime? _Tempdate;
   DateTime pickedDate = DateTime.now();
-  String formattedDate='';
-  String formattedCurrentGoal='';
+  String formattedDate = '';
+  String formattedCurrentGoal = '';
   DateTime? _dateSavings;
   double? _newSavingsAmount;
 
-
   Widget build(BuildContext context) {
-
     if (_isLoading) {
       return Scaffold(
-
         backgroundColor: Colors.white,
         body: Center(
           child: Container(
-            child: CircularProgressIndicator( valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),),
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+            ),
           ),
         ),
       );
-    }
-
-    else {
+    } else {
       return new WillPopScope(
           onWillPop: () async => false,
-    child: Scaffold(
-        drawer: MyDrawer(),
-        body: Builder(
-          builder: (context) => Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage("assets/images/background.png"),
-                    fit: BoxFit.cover,
+          child: Scaffold(
+            drawer: MyDrawer(),
+            body: Builder(
+              builder: (context) => Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/images/background.png"),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                ),),
-
-              Column(
-                  children: [
-                    Padding(padding: EdgeInsets.only(top:40)),
-                    Text('All Savings', style: TextStyle(fontSize: 25, color: Colors.green, fontWeight: FontWeight.bold),),
-
+                  Column(children: [
+                    Padding(padding: EdgeInsets.only(top: 40)),
+                    Text(
+                      'All Savings',
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold),
+                    ),
                     Expanded(
-
-                      child: ListView(
-                          children: [
-                            Container(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                    children: [
-
-                                      all_savings.isEmpty
-                                          ? Center(child: Text('No Data', style: const TextStyle(fontSize: 20),))
-                                          : SingleChildScrollView(
-                                        scrollDirection: Axis.vertical,
-                                        child: SingleChildScrollView(
+                      child: ListView(children: [
+                        Container(
+                          child: SingleChildScrollView(
+                            child: Column(children: [
+                              all_savings.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                      'No Data',
+                                      style: const TextStyle(fontSize: 20),
+                                    ))
+                                  : SingleChildScrollView(
+                                      scrollDirection: Axis.vertical,
+                                      child: SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
                                           child: DataTable(
                                             showCheckboxColumn: false,
                                             horizontalMargin: 10,
                                             columnSpacing: 10,
                                             columns: const [
-
                                               DataColumn(label: Text('Amount')),
                                               DataColumn(label: Text('Date')),
                                               DataColumn(label: Text('Edit')),
                                               DataColumn(label: Text('Delete')),
-
                                             ],
                                             rows: all_savings
-                                                .map((savings) => DataRow(cells: [
-
-                                              DataCell(Text(formatCurrency(savings['amount']))),
-                                              DataCell(Text(savings['date'].toString())),
-                                              DataCell(
-                                                IconButton(
-                                                  icon: Icon(Icons.edit),
-                                                  onPressed: () {
-
-                                                    showEditSavingsDialog(
-                                                        savings['id'],
-                                                        savings['amount'],
-                                                        DateTime.parse(
-                                                            savings[
-                                                            'date']));
-                                                  },
-                                                ),
-                                              ),
-                                              DataCell(
-                                                IconButton(
-                                                  icon: Icon(Icons.remove),
-                                                  onPressed: () {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (BuildContext context) {
-                                                        return AlertDialog(
-                                                          title: Text('Confirm Delete'),
-                                                          content: Text('Are you sure you want to delete this savings record?'),
-                                                          actions: <Widget>[
-                                                            TextButton(
-                                                              child: Text('Cancel'),
-                                                              onPressed: () {
-                                                                Navigator.of(context).pop();
-                                                              },
+                                                .map((savings) => DataRow(
+                                                      cells: [
+                                                        DataCell(Text(
+                                                            formatCurrency(
+                                                                savings[
+                                                                    'amount']))),
+                                                        DataCell(Text(
+                                                            savings['date']
+                                                                .toString())),
+                                                        DataCell(
+                                                          IconButton(
+                                                            icon: Icon(
+                                                                Icons.edit),
+                                                            onPressed: () {
+                                                              showEditSavingsDialog(
+                                                                  savings['id'],
+                                                                  savings[
+                                                                      'amount'],
+                                                                  DateTime.parse(
+                                                                      savings[
+                                                                          'date']));
+                                                            },
+                                                          ),
+                                                        ),
+                                                        DataCell(
+                                                          IconButton(
+                                                            icon: Icon(
+                                                                Icons.remove),
+                                                            onPressed: () {
+                                                              showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
+                                                                  return AlertDialog(
+                                                                    title: Text(
+                                                                        'Confirm Delete'),
+                                                                    content: Text(
+                                                                        'Are you sure you want to delete this savings record?'),
+                                                                    actions: <
+                                                                        Widget>[
+                                                                      TextButton(
+                                                                        child: Text(
+                                                                            'Cancel'),
+                                                                        onPressed:
+                                                                            () {
+                                                                          Navigator.of(context)
+                                                                              .pop();
+                                                                        },
+                                                                      ),
+                                                                      TextButton(
+                                                                        child: Text(
+                                                                            'Delete'),
+                                                                        onPressed:
+                                                                            () {
+                                                                          savingsDelete(
+                                                                              savings['id']);
+                                                                          _loadData();
+                                                                          Navigator.of(context)
+                                                                              .pop();
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  );
+                                                                },
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ],
+                                                      onSelectChanged: (value) {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) =>
+                                                              AlertDialog(
+                                                            title: Text(
+                                                              'Savings Entry',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .green),
                                                             ),
-                                                            TextButton(
-                                                              child: Text('Delete'),
-                                                              onPressed: () {
-                                                                savingsDelete(savings['id']);
-                                                                _loadData();
-                                                                Navigator.of(context).pop();
-                                                              },
-                                                            ),
-                                                          ],
+                                                            content: Text(
+                                                                'Amount: \₱${savings['amount']} \nDate: ${savings['date']}'),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                        context),
+                                                                child: Text(
+                                                                    'Close'),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         );
                                                       },
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                              onSelectChanged: (value) {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    title: Text('Savings Entry',
-                                                      style: TextStyle(color: Colors.green),),
-                                                    content: Text('Amount: \₱${savings['amount']} \nDate: ${savings['date']}'),
-                                                    actions: [
-
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context),
-                                                        child: Text('Close'),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                            )
-                                            )
+                                                    ))
                                                 .toList(),
-                                          )
-                                        ),
-                                      ),
-                                    ]),),),
-                          ]),
-                    ),]),
-              IconButton(
-                icon: Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                padding: EdgeInsets.all(16.0),
+                                          )),
+                                    ),
+                            ]),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ]),
+                  IconButton(
+                    icon: Icon(Icons.menu),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                    padding: EdgeInsets.all(16.0),
+                  ),
+                  Positioned(
+                    bottom: 16.0,
+                    right: 16.0,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        showAddSavingsDialog();
+                      },
+                      child: Icon(Icons.add),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                bottom: 16.0,
-                right: 16.0,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    showAddSavingsDialog();
-                  },
-                  child: Icon(Icons.add),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ));}
+            ),
+          ));
+    }
   }
 
   Color getCategoryColor(String category) {
@@ -211,11 +238,12 @@ class _SavingsPageState extends State<SavingsPage> {
         return Colors.deepOrange;
       default:
         return Colors.grey;
-
     }
   }
+
   String formatCurrency(double amount) {
-    final formatter = NumberFormat.currency(locale: 'fil_PH', symbol: '₱', decimalDigits: 2);
+    final formatter =
+        NumberFormat.currency(locale: 'fil_PH', symbol: '₱', decimalDigits: 2);
     return formatter.format(amount);
   }
 
@@ -223,7 +251,10 @@ class _SavingsPageState extends State<SavingsPage> {
     all_savings.clear();
     final query = db.select(db.savings)
       ..where((savings) => savings.userid.equals(id_session))
-      ..orderBy([(savings) => OrderingTerm(expression: savings.date, mode: OrderingMode.desc)]);
+      ..orderBy([
+        (savings) =>
+            OrderingTerm(expression: savings.date, mode: OrderingMode.desc)
+      ]);
     final result = await query.get();
 
     print("Result: $result");
@@ -236,12 +267,11 @@ class _SavingsPageState extends State<SavingsPage> {
       };
       all_savings.add(item);
     }
-
   }
+
   Future<void> _loadDatabase() async {
     // Replace with your Moor database initialization code
-      await getAllSavings();
-
+    await getAllSavings();
   }
 
   Future<void> _loadData() async {
@@ -252,18 +282,15 @@ class _SavingsPageState extends State<SavingsPage> {
     });
   }
 
-
   Future showEditSavingsDialog(int id, double oldAmount, DateTime oldDate) {
-    TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format((oldDate)));
-
-
+    TextEditingController dateInputController =
+        TextEditingController(text: DateFormat('yyyy-MM-dd').format((oldDate)));
 
     double _amount = oldAmount;
     DateTime _date = oldDate;
     DateTime? _Tempdate;
     DateTime pickedDate = oldDate;
-    String formattedDate='';
-
+    String formattedDate = '';
 
     return showDialog(
         context: context,
@@ -276,7 +303,6 @@ class _SavingsPageState extends State<SavingsPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-
                     TextFormField(
                       decoration: InputDecoration(labelText: 'Date'),
                       validator: (value) {
@@ -286,14 +312,13 @@ class _SavingsPageState extends State<SavingsPage> {
                         return null;
                       },
                       onSaved: (value) {
-                        if (_Tempdate==null) {
+                        if (_Tempdate == null) {
                           _date = oldDate;
+                        } else {
+                          _date = _Tempdate!;
                         }
-                        else
-                        {_date = _Tempdate!;}
                         print(_date);
                       },
-
                       controller: dateInputController,
                       readOnly: true,
                       onTap: () async {
@@ -303,24 +328,26 @@ class _SavingsPageState extends State<SavingsPage> {
                             firstDate: DateTime(1950),
                             lastDate: DateTime.now()))!;
 
-                        print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
-                        formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                        print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                        print(
+                            pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                        formattedDate =
+                            DateFormat('yyyy-MM-dd').format(pickedDate);
+                        print(
+                            formattedDate); //formatted date output using intl package =>  2021-03-16
                         dateInputController.text = formattedDate;
-                        _Tempdate=pickedDate;
+                        _Tempdate = pickedDate;
                         print(_Tempdate);
-
                       },
-
-
                     ),
-
-
                     TextFormField(
-                      initialValue: oldAmount.toString().replaceAll(RegExp(r'\.0$'), ''),
+                      initialValue:
+                          oldAmount.toString().replaceAll(RegExp(r'\.0$'), ''),
                       maxLength: 7,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: 'Amount',counterText: "",),
+                      decoration: InputDecoration(
+                        labelText: 'Amount',
+                        counterText: "",
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter amount';
@@ -331,12 +358,10 @@ class _SavingsPageState extends State<SavingsPage> {
                         _amount = double.parse(value!);
                       },
                     ),
-
                   ],
                 ),
-              ),),
-
-
+              ),
+            ),
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
@@ -349,11 +374,9 @@ class _SavingsPageState extends State<SavingsPage> {
                   }
                 },
                 child: Text('Save'),
-
               ),
               ElevatedButton(
                   onPressed: () {
-
                     Navigator.pop(context);
                   },
                   child: Text('Cancel')),
@@ -363,7 +386,6 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   savingsEdit(int id, double newAmount, DateTime date) async {
-
     final query = db.update(db.savings)
       ..where((savings) => savings.id.equals(id))
       ..write(SavingsCompanion(amount: Value(newAmount), date: Value(date)));
@@ -371,13 +393,13 @@ class _SavingsPageState extends State<SavingsPage> {
     await query;
   }
 
-  savingsDelete(int id) async
-  {
+  savingsDelete(int id) async {
     final query = db.delete(db.savings)
       ..where((savings) => savings.id.equals(id))
       ..go();
     await query;
   }
+
   Future showAddSavingsDialog() {
     return showDialog(
         context: context,
@@ -389,7 +411,6 @@ class _SavingsPageState extends State<SavingsPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Date'),
                     validator: (value) {
@@ -399,14 +420,13 @@ class _SavingsPageState extends State<SavingsPage> {
                       return null;
                     },
                     onSaved: (value) {
-                      if (_Tempdate==null) {
+                      if (_Tempdate == null) {
                         _dateSavings = DateTime.now();
+                      } else {
+                        _dateSavings = _Tempdate;
                       }
-                      else
-                      {_dateSavings = _Tempdate;}
                       print(_date);
                     },
-
                     controller: dateInputController,
                     readOnly: true,
                     onTap: () async {
@@ -416,23 +436,24 @@ class _SavingsPageState extends State<SavingsPage> {
                           firstDate: DateTime(1950),
                           lastDate: DateTime.now()))!;
 
-                      print(pickedDate);  //pickedDate output format => 2021-03-10 00:00:00.000
-                      formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                      print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                      print(
+                          pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                      formattedDate =
+                          DateFormat('yyyy-MM-dd').format(pickedDate);
+                      print(
+                          formattedDate); //formatted date output using intl package =>  2021-03-16
                       dateInputController.text = formattedDate;
-                      _Tempdate=pickedDate;
+                      _Tempdate = pickedDate;
                       print(_Tempdate);
-
                     },
-
-
                   ),
-
                   TextFormField(
                     maxLength: 7,
-
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Amount', counterText: "",),
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      counterText: "",
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter amount';
@@ -443,12 +464,9 @@ class _SavingsPageState extends State<SavingsPage> {
                       _newSavingsAmount = double.parse(value!);
                     },
                   ),
-
                 ],
               ),
             ),
-
-
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
@@ -456,18 +474,17 @@ class _SavingsPageState extends State<SavingsPage> {
                     _keyDialogForm_newSavings.currentState?.save();
                     insertSavings();
                     _loadData();
-                    pickedDate=DateTime.now();
+                    pickedDate = DateTime.now();
                     formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                     dateInputController.text = formattedDate;
                     Navigator.pop(context);
                   }
                 },
                 child: Text('Save'),
-
               ),
               ElevatedButton(
                   onPressed: () {
-                    pickedDate=DateTime.now();
+                    pickedDate = DateTime.now();
                     formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                     dateInputController.text = formattedDate;
                     Navigator.pop(context);
@@ -479,20 +496,18 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   Future<void> insertSavings() async {
-
-      await db.batch((batch) {
-        batch.insertAll(
-          db.savings,
-          [
-            SavingsCompanion(
-              userid: Value(id_session!),
-              amount: Value(_newSavingsAmount!),
-              date: Value(_dateSavings),
-              active: Value(1),
-            ),
-          ],
-        );
-      });
-
+    await db.batch((batch) {
+      batch.insertAll(
+        db.savings,
+        [
+          SavingsCompanion(
+            userid: Value(id_session!),
+            amount: Value(_newSavingsAmount!),
+            date: Value(_dateSavings),
+            active: Value(1),
+          ),
+        ],
+      );
+    });
   }
 }

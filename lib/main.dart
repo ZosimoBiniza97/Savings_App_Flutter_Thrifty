@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:thrifty/account.dart';
-import 'login.dart'; // import the file containing the Login widget
 import 'package:local_auth/local_auth.dart';
+import 'package:thrifty/account.dart';
+
+import 'login.dart'; // import the file containing the Login widget
 
 //Initialize authentication method
 LocalAuthentication auth = LocalAuthentication();
 
-
-
-void main(){
+void main() {
   runApp(MyApp());
 }
 
-Future<void> auths(BuildContext context)
-async {
-
+Future<void> auths(BuildContext context) async {
 // method to detect if authentication is successful
   bool isAuthenticated = await authenticate();
   if (isAuthenticated) {
@@ -23,13 +20,10 @@ async {
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-
         return AlertDialog(
-
           title: Text('Authentication Successful'),
           content: Text('Authentication Successful'),
           actions: <Widget>[
-
             TextButton(
               child: Text('OK'),
               onPressed: () {
@@ -38,20 +32,17 @@ async {
                   MaterialPageRoute(builder: (context) => ViewAccount()),
                 );
 
-               // Do something when OK button is pressed
+                // Do something when OK button is pressed
               },
             ),
           ],
         );
       },
     );
-  }
-
-  else {
+  } else {
 // Do something when authentication fails
-  // UPDATE SOON
+    // UPDATE SOON
   }
-
 }
 
 // Fingerprint authentication method
@@ -66,28 +57,20 @@ Future authenticate() async {
         stickyAuth: true,
       ),
     );
-  }
-  on PlatformException {
+  } on PlatformException {
     return;
   }
 }
-
-
 
 // Call main Login body
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-
       title: 'My App',
-      home:
-        Login(), // add the Login widget here
-
+      home: Login(), // add the Login widget here
     );
   }
 }
 
-
 //test for git push
-
