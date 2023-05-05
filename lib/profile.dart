@@ -17,9 +17,11 @@ class ProfilePage extends StatefulWidget{
 
 class _ProfilePageState extends State<ProfilePage> {
   final _formKeyEdit = GlobalKey<FormState>();
-
+  final _keyDialogForm_changePass = GlobalKey<FormState>();
   bool _isEditMode = false;
-
+  String oldPassword = '';
+  String newPassword = '';
+  String confirmPassword = '';
 
   void _submitForm() {
     _formKeyEdit.currentState?.save();
@@ -167,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               SizedBox(height: 7),
                               Container(
                                   alignment: Alignment.center,
-                                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                                  padding: EdgeInsets.only(top: 16.0),
                                   child: Row
                                     ( mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -231,10 +233,23 @@ class _ProfilePageState extends State<ProfilePage> {
                                   )
 
                               ),
+
                             ],
                           ),
                         ),
                       ),
+              ElevatedButton(
+                onPressed: () {
+                  showChangePassDialog(id_session!);
+                },
+                child: Text('Change Password'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
             ]), ),
                   ),
 
@@ -373,4 +388,176 @@ checkEmail(String email) async {
     final countResult = await db.customSelect('SELECT COUNT(*) FROM users').getSingle();
     return (countResult.data.values.first+1) as int;
   }
+  passwordChange(int id, String oldPassword, String newPass) async {
+
+    if (await checkLogin(id, oldPassword))
+      {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Confirmation'),
+              content: Text('Are you sure you want to change password?'),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+
+                    final query = db.update(db.users)
+                      ..where((users) => users.id.equals(id))
+                      ..write(UsersCompanion(password: Value(newPassword)));
+
+                    await query;
+
+                    Navigator.pop(context);
+                  },
+                  child: Text('Yes'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('No'),
+                ),
+              ],
+            );
+          },
+        );
+
+      }
+    else
+      {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Incorrect password'),
+              content: Text('Password is incorrect. Please type in your correct password.'),
+              actions: [
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Ok'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+  }
+
+  Future<bool> checkLogin(int ID, String password) async {
+
+    // Use the select statement to retrieve the row from the users table with the matching username and password
+    final query = db.select(db.users)..where((u) => u.id.equals(ID) & u.password.equals(password));
+    final result = await query.get();
+
+    // Return true if the result is not empty, indicating a matching user was found
+
+    return result.isNotEmpty;
+
+  }
+
+
+  Future showChangePassDialog(int id) {
+
+
+
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Change password'),
+            content: SingleChildScrollView(
+              child: Form(
+                key: _keyDialogForm_changePass,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+
+                    TextFormField(
+                      obscureText: true,
+                      maxLength: 50,
+                      decoration: InputDecoration(
+                        labelText: 'Current password',
+                        counterText: "",
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your current password';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        oldPassword=value!;
+                      },
+                    ),
+                    TextFormField(
+                      obscureText: true,
+                      maxLength: 50,
+                      decoration: InputDecoration(
+                        labelText: 'New password',
+                        counterText: "",
+                      ),
+                      validator: (value) {
+                        print('new password ' + value!);
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your new password';
+                        }
+                        newPassword = value!;
+                        return null;
+                      },
+                      onSaved: (value) {
+                      },
+                    ),
+
+                    TextFormField(
+                      obscureText: true,
+                      maxLength: 50,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm password',
+                        counterText: "",
+                      ),
+                      validator: (value) {
+
+                        print('confirm password validator: $value, newPassword: $newPassword');
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your new password';
+                        }
+                        if (value != newPassword) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        confirmPassword = value!;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_changePass.currentState!.validate()) {
+                    _keyDialogForm_changePass.currentState?.save();
+                    passwordChange(id, oldPassword, newPassword);
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Save'),
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+
+
 }
