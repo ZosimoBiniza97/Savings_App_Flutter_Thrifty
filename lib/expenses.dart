@@ -311,7 +311,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
           date: Value(date)));
 
     await query;
-    _loadData();
 
   }
 
