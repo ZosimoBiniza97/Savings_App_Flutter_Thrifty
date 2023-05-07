@@ -1,9 +1,12 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:thrifty/database.dart';
 import 'package:thrifty/main.dart';
 import 'package:thrifty/signup.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 
 import 'account.dart';
 
@@ -15,7 +18,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
 // Initializing login data types: Username and Password (textfields) for local database query
   final usernameController = TextEditingController();
-
+  final _keyDialogForm_forgotPass = GlobalKey<FormState>();
   final passwordController = TextEditingController();
 
   String Username = '';
@@ -25,6 +28,8 @@ class _LoginState extends State<Login> {
   bool isLoggedIn = false;
 
   int? id_session_login;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +197,7 @@ class _LoginState extends State<Login> {
                     TextButton(
                       onPressed: () {
                         //forgot password screen
+                        showChangePassDialog();
                       },
                       child: const Text(
                         'Forgot Password',
@@ -271,6 +277,122 @@ class _LoginState extends State<Login> {
           ),
         ));
   }
+
+
+  Future showChangePassDialog() {
+    String email = '';
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Forgot password'),
+            content: SingleChildScrollView(
+              child: Form(
+                key: _keyDialogForm_forgotPass,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+
+
+                    TextFormField(
+
+                      maxLength: 50,
+                      decoration: InputDecoration(
+                        labelText: 'Enter email',
+                        counterText: "",
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        email = value!;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  if (_keyDialogForm_forgotPass.currentState!.validate()) {
+                    _keyDialogForm_forgotPass.currentState?.save();
+                    passwordChange(email);
+                    print('Entered email: '+email);
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Save'),
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          );
+        });
+  }
+
+passwordChange(String email) async {
+String generatedPass = generateRandomString();
+    if (await checkEmail(email)) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirmation'),
+            content: Text('Are you sure you want to proceed?'),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  final query = db.update(db.users)
+                    ..where((users) => users.email.equals(email))
+                    ..write(UsersCompanion(password: Value(generatedPass)));
+                  await query;
+                  Navigator.pop(context);
+                  _showNotification(generatedPass);
+                },
+                child: Text('Yes'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('No'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Email not found'),
+            content: Text(
+                'Email not found. Please type in the email connected to your account'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Ok'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+
+
+
 }
 
 // This is a database method. This method will check if the Username and Password submitted by the user exists in the database
@@ -283,6 +405,56 @@ Future<int?> checkLogin(String username, String password) async {
   // Return true if the result is not empty, indicating a matching user was found
 
   return result.isNotEmpty ? result.first.id : null;
+}
+
+
+String generateRandomString() {
+  final random = Random.secure();
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return String.fromCharCodes(Iterable.generate(
+      6, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+}
+
+Future<void> _showNotification(String password) async {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+  var initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+  var initializationSettingsIOS = IOSInitializationSettings();
+  var initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    'channel_id',
+    'channel_name',
+    'channel_description',
+    importance: Importance.high,
+    priority: Priority.high,
+    timeoutAfter: 20000, // 20 seconds
+    playSound: true,
+    enableLights: true,
+    color: Colors.red,
+    ledColor: Colors.green,
+    ledOnMs: 1000,
+    ledOffMs: 500,
+  );
+  var platformChannelSpecifics =
+  NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+      0, 'Temporary Password', 'This is your temporary password: '+password , platformChannelSpecifics,
+      payload: 'item x');
+}
+
+Future<bool> checkEmail(String email) async {
+  // Use the select statement to retrieve the row from the users table with the matching username and password
+  final query = db.select(db.users)
+    ..where((u) => u.email.equals(email));
+  final result = await query.get();
+  // Return true if the result is not empty, indicating a matching user was found
+
+  return result.isNotEmpty;
 }
 
 // This is a test method that inserts a sample user data to the user table in the schema

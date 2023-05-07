@@ -34,6 +34,8 @@ dependencies:
   percent_indicator: ^4.0.1
   moor_flutter: ^4.0.0
   confetti: ^0.7.0
+  flutter_local_notifications: ^8.1.0
+
 
   #syncfusion_flutter_charts: ^19.1.54
 

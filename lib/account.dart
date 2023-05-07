@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:thrifty/aboutus.dart';
 import 'package:thrifty/database.dart';
 import 'package:thrifty/expenses.dart';
 import 'package:thrifty/login.dart';
@@ -1804,14 +1805,17 @@ class MyDrawer extends StatelessWidget {
                 color: Colors.white,
               ),
               title: Text(
-                'Help & Support',
+                'About us',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutUsPage()),
+                );
               },
             ),
             ListTile(

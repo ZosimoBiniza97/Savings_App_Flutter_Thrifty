@@ -471,10 +471,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       validator: (value) {
                         print('new password ' + value!);
-                        if (value == null || value.isEmpty) {
+                        if (value.isEmpty) {
                           return 'Please enter your new password';
                         }
-                        newPassword = value!;
+                        newPassword = value;
                         return null;
                       },
                       onSaved: (value) {},
